@@ -122,17 +122,6 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             <Heart className="w-3.5 h-3.5 text-red-400 fill-current" />
             <span>Pay It Forward</span>
           </button>
-
-          {/* Open Sanctuary App Button */}
-          {onLaunchApp && (
-            <button
-              onClick={onLaunchApp}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-95 transition"
-            >
-              <Smartphone className="w-4 h-4" />
-              <span>Open Sanctuary App</span>
-            </button>
-          )}
         </div>
       </header>
 
@@ -175,16 +164,6 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
               <Play className="w-4 h-4 fill-obsidian-950" />
               <span>Pray Online (Psalm 91)</span>
             </button>
-
-            {onLaunchApp && (
-              <button
-                onClick={onLaunchApp}
-                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-obsidian-900 border border-gold-500/40 text-gold-200 font-bold text-base hover:bg-gold-500 hover:text-obsidian-950 active:scale-95 transition shadow-lg"
-              >
-                <Smartphone className="w-4 h-4" />
-                <span>Launch Sanctuary App</span>
-              </button>
-            )}
           </div>
 
           {/* Free Guarantee Trust Marks */}
@@ -703,8 +682,8 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
               An independent Catholic prayer, novena, and spiritual warfare companion. Named after the ancient 5th-century Celtic breastplate of St. Patrick.
             </p>
-            <p className="text-[11px] text-gold-400/80 font-mono">
-              Non-profit Benefactor Covenant • 100% Free
+            <p className="text-[11px] text-slate-400 font-mono">
+              Designed and maintained by <a href="https://xydris.in" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 underline underline-offset-2">Xydris.in</a>
             </p>
           </div>
 
@@ -746,7 +725,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
         </div>
 
         <div className="pt-8 border-t border-obsidian-850 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <p>© 2026 Lorica Catholic Prayers. All sacred texts from public domain Douay-Rheims and traditional Catholic liturgical rites.</p>
+          <p>© 2026 Lorica. Designed and maintained by <a href="https://xydris.in" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 underline underline-offset-2">Xydris.in</a></p>
           <div className="flex items-center gap-4 text-gold-400/70 font-serif italic">
             <span>Benedicat vos omnipotens Deus</span>
           </div>

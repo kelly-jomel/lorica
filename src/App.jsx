@@ -149,24 +149,17 @@ export default function App() {
       )}
 
       {/* Floating Toggle Pill: Switch between Website and Sanctuary App */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setViewMode(viewMode === 'website' ? 'app' : 'website')}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-obsidian-900/90 border border-gold-500/50 text-gold-200 font-bold text-xs sm:text-sm shadow-[0_0_30px_rgba(212,175,55,0.35)] backdrop-blur-md hover:bg-gold-500 hover:text-obsidian-950 transition-all active:scale-95 group"
-        >
-          {viewMode === 'website' ? (
-            <>
-              <Smartphone className="w-4 h-4 text-gold-400 group-hover:text-obsidian-950 transition-colors" />
-              <span>Launch Sanctuary App</span>
-            </>
-          ) : (
-            <>
-              <Globe className="w-4 h-4 text-gold-400 group-hover:text-obsidian-950 transition-colors" />
-              <span>Back to Website</span>
-            </>
-          )}
-        </button>
-      </div>
+      {viewMode !== 'website' && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setViewMode('website')}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-obsidian-900/90 border border-gold-500/50 text-gold-200 font-bold text-xs sm:text-sm shadow-[0_0_30px_rgba(212,175,55,0.35)] backdrop-blur-md hover:bg-gold-500 hover:text-obsidian-950 transition-all active:scale-95 group"
+          >
+            <Globe className="w-4 h-4 text-gold-400 group-hover:text-obsidian-950 transition-colors" />
+            <span>Back to Website</span>
+          </button>
+        </div>
+      )}
 
       {/* Mini Player Bar on Website view */}
       {viewMode === 'website' && !isFullPlayerOpen && currentPrayer && (
