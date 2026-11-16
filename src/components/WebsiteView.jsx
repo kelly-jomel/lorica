@@ -99,7 +99,6 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             <a href="#novenas" className="hover:text-gold-300 transition">Novenas (9-Day)</a>
             <a href="#treasury" className="hover:text-gold-300 transition">Prayer Treasury</a>
             <a href="#protection" className="hover:text-gold-300 transition">Spiritual Warfare</a>
-            <a href="#benefactor" className="hover:text-gold-300 transition">100% Free Model</a>
           </nav>
         </div>
 
