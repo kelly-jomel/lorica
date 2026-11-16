@@ -186,10 +186,10 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
           </div>
 
           {/* Desktop Nav Menu: Home | Prayer Treasury | Novenas | Spirit Warfare */}
-          <nav className="hidden lg:flex items-center gap-1.5 text-xs font-semibold">
+          <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold">
             <button
               onClick={() => navigateTo('home')}
-              className={`px-3.5 py-1.5 rounded-xl transition ${
+              className={`px-3 py-1.5 rounded-xl transition ${
                 currentPage === 'home'
                   ? 'bg-gold-500/20 text-gold-200 border border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
@@ -199,7 +199,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             </button>
             <button
               onClick={() => navigateTo('treasury')}
-              className={`px-3.5 py-1.5 rounded-xl transition ${
+              className={`px-3 py-1.5 rounded-xl transition ${
                 currentPage === 'treasury'
                   ? 'bg-gold-500/20 text-gold-200 border border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
@@ -209,7 +209,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             </button>
             <button
               onClick={() => navigateTo('novenas')}
-              className={`px-3.5 py-1.5 rounded-xl transition ${
+              className={`px-3 py-1.5 rounded-xl transition ${
                 currentPage === 'novenas'
                   ? 'bg-gold-500/20 text-gold-200 border border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
@@ -219,7 +219,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             </button>
             <button
               onClick={() => navigateTo('warfare')}
-              className={`px-3.5 py-1.5 rounded-xl transition ${
+              className={`px-3 py-1.5 rounded-xl transition ${
                 currentPage === 'warfare'
                   ? 'bg-gold-500/20 text-gold-200 border border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
@@ -253,7 +253,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
           {/* Mobile Hamburger Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl bg-obsidian-900 border border-obsidian-800 text-slate-300 hover:text-gold-300 transition"
+            className="md:hidden p-2 rounded-xl bg-obsidian-900 border border-obsidian-800 text-slate-300 hover:text-gold-300 transition"
             aria-label="Toggle navigation menu"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -263,7 +263,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
 
       {/* MOBILE DRAWER NAVIGATION */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[57px] z-40 bg-obsidian-950/95 backdrop-blur-2xl border-b border-obsidian-800 p-4 space-y-2 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
+        <div className="md:hidden fixed inset-x-0 top-[57px] z-40 bg-obsidian-950/95 backdrop-blur-2xl border-b border-obsidian-800 p-4 space-y-2 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
           <button
             onClick={() => navigateTo('home')}
             className={`w-full text-left px-4 py-3 rounded-xl font-serif text-sm font-semibold transition flex items-center justify-between ${
