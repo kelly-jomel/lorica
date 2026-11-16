@@ -5,10 +5,11 @@ export default function Navbar({ isPhoneMockup, setIsPhoneMockup, onOpenSOS, onO
   return (
     <header className="sticky top-0 z-40 bg-obsidian-950/80 backdrop-blur-md border-b border-obsidian-700/60 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-gold-500/20 to-obsidian-800 border border-gold-500/40 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
-          <Shield className="w-5 h-5 text-gold-400" />
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-candle-flame rounded-full animate-ping opacity-75" />
-        </div>
+        <img 
+          src="/logo.jpg" 
+          alt="Lorica Logo" 
+          className="w-9 h-9 rounded-xl object-contain border border-gold-500/40 shadow-[0_0_15px_rgba(212,175,55,0.3)] bg-obsidian-900"
+        />
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-serif font-bold text-base tracking-wide text-gold-200">Lorica</h1>
