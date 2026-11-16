@@ -25,8 +25,7 @@ import {
   BookMarked,
   ShieldAlert,
   Sword,
-  ExternalLink,
-  Smartphone
+  ExternalLink
 } from 'lucide-react';
 import { PRAY_SECTIONS, LEARN_SECTIONS } from '../data/categoriesData';
 import { NOVENAS_DATA } from '../data/novenasData';
@@ -98,7 +97,6 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
       setIsPlayingPreview(false);
     } else {
       soundEngine.startCathedralDrone(0.25);
-      soundEngine.startRain(0.15);
       soundEngine.playBell(440);
       setIsPlayingPreview(true);
     }
@@ -707,7 +705,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                 >
                   <Heart className="w-4 h-4 fill-obsidian-950" />
                   <span>
-                    Pay It Forward: ${currentDonation || 0} {donationFrequency === 'monthly' ? '/ month' : 'one-time'}
+                    Pay It Forward & Keep Lorica Free
                   </span>
                 </button>
 

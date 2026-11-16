@@ -11,7 +11,6 @@ import {
   Sliders, 
   Sparkles, 
   Shield, 
-  CloudRain, 
   Church, 
   ChevronDown,
   Music,
@@ -42,7 +41,6 @@ export default function AudioPlayerModal({ prayer, onClose }) {
   // Mixer volume states
   const [mainVol, setMainVol] = useState(0.85);
   const [droneVol, setDroneVol] = useState(0.35);
-  const [rainVol, setRainVol] = useState(0);
 
   const verses = prayer?.verses || [];
   const timerIntervalRef = useRef(null);
@@ -65,7 +63,6 @@ export default function AudioPlayerModal({ prayer, onClose }) {
 
     // Start background atmospheric layers if volume > 0
     if (droneVol > 0) soundEngine.startCathedralDrone(droneVol);
-    if (rainVol > 0) soundEngine.startRain(rainVol);
 
     if (modeToUse === 'chant') {
       // 1. MONASTIC CHORAL AUDIO TRACK
@@ -128,7 +125,7 @@ export default function AudioPlayerModal({ prayer, onClose }) {
         playVerse(verseIdx);
       }
     } else if (modeToUse === 'ambient') {
-      // 3. SILENT AMBIENT MEDITATION (Cathedral Drone + Rain only)
+      // 3. SILENT AMBIENT MEDITATION (Cathedral Drone only)
       soundEngine.stopTrack();
       soundEngine.stopSpeech();
       
@@ -237,16 +234,6 @@ export default function AudioPlayerModal({ prayer, onClose }) {
       soundEngine.setDroneVolume(val);
     } else {
       soundEngine.stopCathedralDrone();
-    }
-  };
-
-  const handleRainVolChange = (val) => {
-    setRainVol(val);
-    if (val > 0) {
-      soundEngine.startRain(val);
-      soundEngine.setRainVolume(val);
-    } else {
-      soundEngine.stopRain();
     }
   };
 
@@ -404,7 +391,7 @@ export default function AudioPlayerModal({ prayer, onClose }) {
         })}
       </div>
 
-      {/* 4. SOUND MIXER DRAWER (Cathedral Reverb & Rain Layer) */}
+      {/* 4. SOUND MIXER DRAWER (Cathedral Acoustic Layer) */}
       {showMixer && (
         <div className="px-6 py-4 bg-obsidian-900 border-t border-obsidian-800 animate-in slide-in-from-bottom duration-200 space-y-3 max-w-md mx-auto w-full rounded-t-3xl shadow-2xl">
           <div className="flex items-center justify-between">

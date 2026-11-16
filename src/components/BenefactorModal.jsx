@@ -227,7 +227,7 @@ export default function BenefactorModal({ isOpen, onClose }) {
               >
                 <Heart className="w-4 h-4 fill-obsidian-950" />
                 <span>
-                  Pay It Forward: ${activeAmount || 0} {frequency === 'monthly' ? '/ month' : 'one-time'}
+                  Pay It Forward & Keep Lorica Free
                 </span>
               </button>
 

@@ -85,7 +85,7 @@ export default function SanctuaryView({ onPlayPrayer, setActiveTab, unreadCandle
               Psalm 91: The Soldier's Shield
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Narrated with deep cathedral acoustic resonance and gentle rain. Designed to loop all night for insomnia and fear.
+              Narrated with deep cathedral acoustic resonance and monastic choir. Designed to loop all night for insomnia and fear.
             </p>
             <div className="flex items-center gap-3 text-xs text-slate-400 pt-1">
               <span className="flex items-center gap-1 font-mono">
