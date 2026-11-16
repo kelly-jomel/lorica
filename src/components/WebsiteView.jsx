@@ -248,7 +248,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
               </div>
               <h3 className="font-serif text-lg font-bold text-gold-200">Continuous Sleep Loops</h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                Insomnia and racing thoughts melt away under the Soldier’s Shield. Psalm 91 and Night Compline are designed to loop all night with cathedral acoustics and pink-noise rain.
+                Insomnia and racing thoughts melt away under the Soldier’s Shield. Psalm 91 and Night Compline are designed to loop all night with cathedral acoustics.
               </p>
               <div className="text-[11px] text-gold-400 font-mono flex items-center gap-1 group-hover:underline">
                 <Play className="w-3 h-3 fill-current" />

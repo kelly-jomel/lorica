@@ -42,7 +42,7 @@ export default function AudioPlayerModal({ prayer, onClose }) {
   // Mixer volume states
   const [mainVol, setMainVol] = useState(0.85);
   const [droneVol, setDroneVol] = useState(0.35);
-  const [rainVol, setRainVol] = useState(0.20);
+  const [rainVol, setRainVol] = useState(0);
 
   const verses = prayer?.verses || [];
   const timerIntervalRef = useRef(null);
@@ -363,7 +363,7 @@ export default function AudioPlayerModal({ prayer, onClose }) {
         <span className="text-[11px] font-mono text-gold-400/90">
           {audioMode === 'chant' && (prayer?.chantName || "Authentic Monastic Schola Gregoriana • Real Human Recording")}
           {audioMode === 'contemplative' && (prayer?.narratorName ? `Studio Narration by ${prayer.narratorName}` : "Warm Reverent Human Cadence • Cathedral Acoustic Reverb")}
-          {audioMode === 'ambient' && "432Hz Sacred Organ Drone & Soft Rain • Silent Contemplation"}
+          {audioMode === 'ambient' && "432Hz Sacred Organ Drone • Silent Contemplation"}
         </span>
       </div>
 
@@ -449,21 +449,7 @@ export default function AudioPlayerModal({ prayer, onClose }) {
             />
           </div>
 
-          {/* Night Rain */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <CloudRain className="w-3.5 h-3.5 text-blue-400" /> Gentle Night Rain
-              </span>
-              <span className="font-mono text-slate-400">{Math.round(rainVol * 100)}%</span>
-            </div>
-            <input 
-              type="range" min="0" max="1" step="0.05"
-              value={rainVol}
-              onChange={(e) => handleRainVolChange(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-obsidian-950 rounded-lg appearance-none cursor-pointer accent-blue-400"
-            />
-          </div>
+
         </div>
       )}
 
