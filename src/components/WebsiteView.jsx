@@ -299,8 +299,8 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {NOVENAS_DATA.slice(0, 8).map((novena) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {NOVENAS_DATA.map((novena) => (
             <div
               key={novena.id}
               onClick={() => onSelectNovena(novena)}
