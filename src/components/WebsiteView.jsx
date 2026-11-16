@@ -25,7 +25,8 @@ import {
   BookMarked,
   ShieldAlert,
   Sword,
-  ExternalLink
+  ExternalLink,
+  Smartphone
 } from 'lucide-react';
 import { PRAY_SECTIONS, LEARN_SECTIONS } from '../data/categoriesData';
 import { NOVENAS_DATA } from '../data/novenasData';
