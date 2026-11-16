@@ -39,8 +39,9 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
 
   // Benefactor Free-Will Donation State (matching the Sanctuary Benefactor Covenant)
-  const [selectedPlan, setSelectedPlan] = useState('warrior'); // 'guardian' | 'warrior' | 'pillar'
+  const [selectedPlan, setSelectedPlan] = useState('warrior'); // 'guardian' | 'warrior' | 'pillar' | 'custom'
   const [donationFrequency, setDonationFrequency] = useState('monthly'); // 'monthly' | 'one-time'
+  const [customAmount, setCustomAmount] = useState('25');
   const [hasDonated, setHasDonated] = useState(false);
 
   const benefactorTiers = [
@@ -74,11 +75,17 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
     }
   ];
 
-  const currentTier = benefactorTiers.find((t) => t.id === selectedPlan) || benefactorTiers[1];
-  const currentDonation = donationFrequency === 'monthly' ? currentTier.monthlyPrice : currentTier.oneTimePrice;
+  const currentTier = benefactorTiers.find((t) => t.id === selectedPlan);
+  const currentDonation =
+    selectedPlan === 'custom'
+      ? parseFloat(customAmount) || 0
+      : donationFrequency === 'monthly'
+      ? currentTier?.monthlyPrice || 15
+      : currentTier?.oneTimePrice || 50;
 
   const handleInlineDonation = (e) => {
     e.preventDefault();
+    if (currentDonation <= 0) return;
     soundEngine.init();
     soundEngine.playBell(523.25);
     setHasDonated(true);
@@ -651,15 +658,57 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                       </div>
                     );
                   })}
+
+                  {/* Custom Amount Free-Will Option */}
+                  <div
+                    onClick={() => setSelectedPlan('custom')}
+                    className={`cursor-pointer p-4 rounded-2xl border transition-all space-y-2.5 ${
+                      selectedPlan === 'custom'
+                        ? 'bg-gold-500/15 border-gold-400 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                        : 'bg-obsidian-950/60 border-obsidian-800 hover:border-obsidian-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-gold-400" />
+                        <span className="font-serif font-bold text-sm text-slate-100">
+                          Custom Free-Will Offering
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-gold-400">Donate what you wish</span>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-mono text-sm font-bold">
+                        $
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        placeholder="Enter amount..."
+                        value={customAmount}
+                        onFocus={() => setSelectedPlan('custom')}
+                        onChange={(e) => {
+                          setSelectedPlan('custom');
+                          setCustomAmount(e.target.value);
+                        }}
+                        className="w-full pl-7 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Submit CTA */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4 cursor-pointer"
+                  disabled={currentDonation <= 0}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-40"
                 >
                   <Heart className="w-4 h-4 fill-obsidian-950" />
-                  <span>Pay It Forward & Keep Lorica Free</span>
+                  <span>
+                    Pay It Forward: ${currentDonation || 0} {donationFrequency === 'monthly' ? '/ month' : 'one-time'}
+                  </span>
                 </button>
 
                 <p className="text-[10px] text-center text-slate-500 pt-1">

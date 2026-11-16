@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Sparkles, X, Check, Shield, Users, Flame, Globe2, Bell } from 'lucide-react';
+import { Heart, Sparkles, X, Check, Shield, Flame } from 'lucide-react';
 import { soundEngine } from '../services/soundEngine';
 
 export default function BenefactorModal({ isOpen, onClose }) {
@@ -44,8 +44,17 @@ export default function BenefactorModal({ isOpen, onClose }) {
     }
   ];
 
+  const currentTier = tiers.find((t) => t.id === selectedPlan);
+  const activeAmount =
+    selectedPlan === 'custom'
+      ? parseFloat(customAmount) || 0
+      : frequency === 'monthly'
+      ? currentTier?.monthlyPrice || 15
+      : currentTier?.oneTimePrice || 50;
+
   const handlePledgeSubmit = (e) => {
     e.preventDefault();
+    if (activeAmount <= 0) return;
     soundEngine.init();
     soundEngine.playBell(523.25); // Resonant cathedral bell
     setIsPledged(true);
@@ -56,7 +65,7 @@ export default function BenefactorModal({ isOpen, onClose }) {
       <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-obsidian-850 via-obsidian-900 to-obsidian-950 border border-gold-500/40 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-8">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-100 p-1.5 rounded-full bg-obsidian-900 border border-obsidian-800 transition"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-100 p-1.5 rounded-full bg-obsidian-900 border border-obsidian-800 transition active:scale-95"
         >
           <X className="w-5 h-5" />
         </button>
@@ -140,9 +149,13 @@ export default function BenefactorModal({ isOpen, onClose }) {
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${
-                          isSelected ? 'bg-gold-500/20 border-gold-400 text-gold-300' : 'bg-obsidian-900 border-obsidian-800 text-slate-400'
-                        }`}>
+                        <div
+                          className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${
+                            isSelected
+                              ? 'bg-gold-500/20 border-gold-400 text-gold-300'
+                              : 'bg-obsidian-900 border-obsidian-800 text-slate-400'
+                          }`}
+                        >
                           <Icon className="w-5 h-5" />
                         </div>
                         <div>
@@ -157,9 +170,7 @@ export default function BenefactorModal({ isOpen, onClose }) {
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="font-mono text-base font-bold text-gold-300">
-                          ${price}
-                        </span>
+                        <span className="font-mono text-base font-bold text-gold-300">${price}</span>
                         <span className="text-[10px] text-slate-500 block">
                           {frequency === 'monthly' ? '/month' : 'one-time'}
                         </span>
@@ -167,15 +178,57 @@ export default function BenefactorModal({ isOpen, onClose }) {
                     </div>
                   );
                 })}
+
+                {/* Custom Amount Free-Will Option */}
+                <div
+                  onClick={() => setSelectedPlan('custom')}
+                  className={`cursor-pointer p-4 rounded-2xl border transition-all space-y-2.5 ${
+                    selectedPlan === 'custom'
+                      ? 'bg-gold-500/15 border-gold-400 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+                      : 'bg-obsidian-950/60 border-obsidian-800 hover:border-obsidian-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-gold-400" />
+                      <span className="font-serif font-bold text-sm text-slate-100">
+                        Custom Free-Will Offering
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-gold-400">Donate what you wish</span>
+                  </div>
+
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-mono text-sm font-bold">
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      placeholder="Enter amount..."
+                      value={customAmount}
+                      onFocus={() => setSelectedPlan('custom')}
+                      onChange={(e) => {
+                        setSelectedPlan('custom');
+                        setCustomAmount(e.target.value);
+                      }}
+                      className="w-full pl-7 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Submit CTA */}
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4"
+                disabled={activeAmount <= 0}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-40"
               >
                 <Heart className="w-4 h-4 fill-obsidian-950" />
-                <span>Pay It Forward & Keep Lorica Free</span>
+                <span>
+                  Pay It Forward: ${activeAmount || 0} {frequency === 'monthly' ? '/ month' : 'one-time'}
+                </span>
               </button>
 
               <p className="text-[10px] text-center text-slate-500 pt-1">
@@ -194,9 +247,10 @@ export default function BenefactorModal({ isOpen, onClose }) {
               <span className="text-xs font-mono text-gold-400 uppercase tracking-widest">
                 Covenant Confirmed
               </span>
-              <h3 className="font-serif text-2xl font-bold text-slate-100">
-                God Bless Your Generosity
-              </h3>
+              <h3 className="font-serif text-2xl font-bold text-slate-100">God Bless Your Generosity</h3>
+              <p className="text-sm text-gold-300 font-mono">
+                ${activeAmount} {frequency === 'monthly' ? '/ month recurring' : 'one-time gift'} pledged
+              </p>
               <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed pt-1">
                 You have just ensured that souls experiencing sleepless dread, panic, and spiritual combat will find Christ's peace tonight for free.
               </p>
@@ -220,9 +274,9 @@ export default function BenefactorModal({ isOpen, onClose }) {
                 setIsPledged(false);
                 onClose();
               }}
-              className="px-6 py-2.5 rounded-xl bg-obsidian-800 border border-obsidian-700 text-slate-200 text-xs font-semibold hover:bg-obsidian-750 transition"
+              className="px-6 py-2.5 rounded-xl bg-obsidian-800 border border-obsidian-700 text-slate-200 text-xs font-semibold hover:bg-obsidian-750 transition cursor-pointer"
             >
-              Return to Sanctuary
+              Return in Peace
             </button>
           </div>
         )}
