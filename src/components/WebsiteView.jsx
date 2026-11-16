@@ -32,7 +32,7 @@ import { NOVENAS_DATA } from '../data/novenasData';
 import { PRAYERS_DATA } from '../data/prayersData';
 import { soundEngine } from '../services/soundEngine';
 
-export default function WebsiteView({ onPlayPrayer, onOpenBenefactor, onOpenCalendar, onSelectNovena }) {
+export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefactor, onOpenCalendar, onSelectNovena }) {
   const [activeTabGroup, setActiveTabGroup] = useState('PRAY');
   const [activeSectionId, setActiveSectionId] = useState('prayers');
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
@@ -117,11 +117,22 @@ export default function WebsiteView({ onPlayPrayer, onOpenBenefactor, onOpenCale
           {/* Pay It Forward Benefactor Trigger */}
           <button
             onClick={onOpenBenefactor}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-xs shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-95 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-300 font-semibold text-xs hover:bg-gold-500/20 active:scale-95 transition"
           >
-            <Heart className="w-3.5 h-3.5 text-obsidian-950 fill-current" />
+            <Heart className="w-3.5 h-3.5 text-red-400 fill-current" />
             <span>Pay It Forward</span>
           </button>
+
+          {/* Open Sanctuary App Button */}
+          {onLaunchApp && (
+            <button
+              onClick={onLaunchApp}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-95 transition"
+            >
+              <Smartphone className="w-4 h-4" />
+              <span>Open Sanctuary App</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -164,6 +175,16 @@ export default function WebsiteView({ onPlayPrayer, onOpenBenefactor, onOpenCale
               <Play className="w-4 h-4 fill-obsidian-950" />
               <span>Pray Online (Psalm 91)</span>
             </button>
+
+            {onLaunchApp && (
+              <button
+                onClick={onLaunchApp}
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-obsidian-900 border border-gold-500/40 text-gold-200 font-bold text-base hover:bg-gold-500 hover:text-obsidian-950 active:scale-95 transition shadow-lg"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>Launch Sanctuary App</span>
+              </button>
+            )}
           </div>
 
           {/* Free Guarantee Trust Marks */}
