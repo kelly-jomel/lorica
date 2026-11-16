@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- 1. Home Page -->
+  <url>
+    <loc>https://clear-white-pheasant-53.hostingersite.com/</loc>
+    <lastmod>2026-11-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://clear-white-pheasant-53.hostingersite.com/logo.jpg</image:loc>
+      <image:title>Lorica Catholic Prayers and Spiritual Armor</image:title>
+      <image:caption>Scutum Fidei - Traditional Catholic Prayers and Novenas</image:caption>
+    </image:image>
+  </url>
+
+  <!-- 2. Catholic Prayer Treasury -->
+  <url>
+    <loc>https://clear-white-pheasant-53.hostingersite.com/#treasury</loc>
+    <lastmod>2026-11-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 3. Catholic Novenas Directory -->
+  <url>
+    <loc>https://clear-white-pheasant-53.hostingersite.com/#novenas</loc>
+    <lastmod>2026-11-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 4. Spirit Warfare & Sacred Protection -->
+  <url>
+    <loc>https://clear-white-pheasant-53.hostingersite.com/#warfare</loc>
+    <lastmod>2026-11-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+</urlset>

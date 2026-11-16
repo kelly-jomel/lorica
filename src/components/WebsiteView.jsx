@@ -72,6 +72,39 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Dynamic SEO Page Title & Description Updates
+  useEffect(() => {
+    const seoMeta = {
+      home: {
+        title: "Lorica | Catholic Prayers, 9-Day Novenas & Spiritual Warfare Armor",
+        desc: "Free traditional Catholic prayer armory featuring authentic studio voice narration, Gregorian monastic chants, 12 complete 9-day novenas with Rosary, and Psalm 91 sleep loops."
+      },
+      treasury: {
+        title: "Catholic Prayer Treasury | 7 Pray & 5 Learn Libraries | Lorica",
+        desc: "Browse the complete Catholic prayer library: foundational prayers, Eucharistic Adoration, Marian litanies, and patristic Latin chants with authentic studio audio."
+      },
+      novenas: {
+        title: "12 Catholic Novenas Directory | Full 9 Days & 5-Decade Rosary | Lorica",
+        desc: "All 12 complete traditional Catholic novenas. Full 9-day liturgical journey with daily intentions, Scripture meditations, authentic studio audio, and the complete Holy Rosary."
+      },
+      warfare: {
+        title: "Spirit Warfare & Sacred Protection | St. Michael, St. Benedict & Psalm 91 | Lorica",
+        desc: "Centuries of traditional Catholic spiritual armor against panic, demonic oppression, and nighttime fear. St. Michael battle prayer, St. Benedict exorcism blessing, and Lorica of St. Patrick."
+      }
+    };
+
+    const currentSeo = seoMeta[currentPage] || seoMeta.home;
+    document.title = currentSeo.title;
+    const descMeta = document.querySelector('meta[name="description"]');
+    if (descMeta) {
+      descMeta.setAttribute('content', currentSeo.desc);
+    }
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) {
+      ogTitle.setAttribute('content', currentSeo.title);
+    }
+  }, [currentPage]);
+
   const navigateTo = (page) => {
     setCurrentPage(page);
     setIsMobileMenuOpen(false);
