@@ -1,0 +1,58 @@
+{
+  "name": "Lorica: Catholic Prayers & Spiritual Armor",
+  "short_name": "Lorica",
+  "description": "Authentic Catholic prayer armory, studio audio narrations, 12 complete 9-day novenas with Rosary, and spiritual combat armor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070a",
+  "theme_color": "#0c0e14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "1024x768",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "books", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Psalm 91 Sleep Armor",
+      "short_name": "Psalm 91",
+      "description": "Listen to the ancient protection psalm and sleep loop",
+      "url": "/#treasury",
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64" }]
+    },
+    {
+      "name": "12 Novenas",
+      "short_name": "Novenas",
+      "description": "Interactive 9-day novena prayer journeys",
+      "url": "/#novenas",
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64" }]
+    },
+    {
+      "name": "Confession Helper",
+      "short_name": "Confession",
+      "description": "Examination of conscience and Act of Contrition",
+      "url": "/#confession",
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64" }]
+    }
+  ]
+}

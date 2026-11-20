@@ -23,18 +23,50 @@ import {
   Cross,
   Clock,
   ShieldCheck,
+  Disc,
+  Languages,
   Zap,
   ArrowRight,
   HeartHandshake,
-  Music
+  Music,
+  User
 } from 'lucide-react';
 import { PRAY_SECTIONS, LEARN_SECTIONS } from '../data/categoriesData';
 import { NOVENAS_DATA } from '../data/novenasData';
 import { PRAYERS_DATA, CRISIS_CAROUSEL } from '../data/prayersData';
 import { soundEngine } from '../services/soundEngine';
 import DailyPsalmCard from './DailyPsalmCard';
+import { currencyService, SUPPORTED_CURRENCIES } from '../services/currencyService';
+import { TRANSLATIONS } from '../data/translationsData';
 
-export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefactor, onOpenCalendar, onSelectNovena }) {
+export default function WebsiteView({ 
+  onLaunchApp, 
+  onPlayPrayer, 
+  onOpenBenefactor, 
+  onOpenCalendar, 
+  onSelectNovena, 
+  onOpenBible, 
+  onOpenConfession,
+  onOpenRosary,
+  onOpenIntentions,
+  onOpenProfile,
+  onShareCard
+}) {
+  // Multi-Language State (en, es, pt)
+  const [lang, setLang] = useState(() => {
+    return localStorage.getItem('lorica_user_lang') || 'en';
+  });
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  const handleLanguageChange = (newLang) => {
+    soundEngine.init();
+    soundEngine.playBell(523.25);
+    setLang(newLang);
+    try {
+      localStorage.setItem('lorica_user_lang', newLang);
+    } catch (e) {}
+  };
   // Page Navigation State: 'home' | 'treasury' | 'novenas' | 'warfare'
   const [currentPage, setCurrentPage] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -56,7 +88,27 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
   // Benefactor Free-Will Donation State (matching the Sanctuary Benefactor Covenant)
   const [selectedPlan, setSelectedPlan] = useState('warrior'); // 'guardian' | 'warrior' | 'pillar' | 'custom'
   const [donationFrequency, setDonationFrequency] = useState('monthly'); // 'monthly' | 'one-time'
-  const [customAmount, setCustomAmount] = useState('25');
+  const [currency, setCurrency] = useState(() => currencyService.getCurrency());
+  const [customAmount, setCustomAmount] = useState(() => String(currencyService.getCurrency().defaultCustom));
+  const [inlineDonorName, setInlineDonorName] = useState('');
+  const [inlineDonorEmail, setInlineDonorEmail] = useState('');
+  const [isInlineSubmitting, setIsInlineSubmitting] = useState(false);
+
+  useEffect(() => {
+    currencyService.autoDetect().then((c) => {
+      if (c) {
+        setCurrency(c);
+        setCustomAmount(String(c.defaultCustom));
+      }
+    });
+    const unsub = currencyService.subscribe((c) => {
+      if (c) {
+        setCurrency(c);
+        setCustomAmount(String(c.defaultCustom));
+      }
+    });
+    return () => unsub();
+  }, []);
   const [hasDonated, setHasDonated] = useState(false);
 
   // Sync Hash on Browser Back/Forward
@@ -116,8 +168,8 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
     {
       id: 'guardian',
       name: 'Guardian Benefactor',
-      monthlyPrice: 5,
-      oneTimePrice: 20,
+      monthlyPrice: currency.guardian.monthly,
+      oneTimePrice: currency.guardian.oneTime,
       soulsImpact: '10 Souls Sponsored',
       desc: 'Ensures free audio prayers and sleep peace for 10 people battling anxiety or insomnia each month.',
       icon: Shield
@@ -125,8 +177,8 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
     {
       id: 'warrior',
       name: 'St. Michael Warrior',
-      monthlyPrice: 15,
-      oneTimePrice: 50,
+      monthlyPrice: currency.warrior.monthly,
+      oneTimePrice: currency.warrior.oneTime,
       soulsImpact: '35 Souls Sponsored',
       desc: 'Funds continuous server bandwidth, scripture translations, and high-fidelity vocal recordings.',
       icon: Flame,
@@ -135,8 +187,8 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
     {
       id: 'pillar',
       name: 'Sanctuary Pillar',
-      monthlyPrice: 30,
-      oneTimePrice: 100,
+      monthlyPrice: currency.pillar.monthly,
+      oneTimePrice: currency.pillar.oneTime,
       soulsImpact: '75 Souls Sponsored',
       desc: 'Endows new sacred audio production, Gregorian choir recording sessions, and parish outreach.',
       icon: Sparkles
@@ -151,12 +203,38 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
       ? currentTier?.monthlyPrice || 15
       : currentTier?.oneTimePrice || 50;
 
-  const handleInlineDonation = (e) => {
+  const handleInlineDonation = async (e) => {
     e.preventDefault();
     if (currentDonation <= 0) return;
+    if (!inlineDonorName.trim() || !inlineDonorEmail.trim()) {
+      alert('Please enter your Full Name and Email Address so we can register your benefaction.');
+      return;
+    }
+
+    setIsInlineSubmitting(true);
     soundEngine.init();
     soundEngine.playBell(523.25);
-    setHasDonated(true);
+
+    try {
+      await fetch('/api/user-handler.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record_donation',
+          name: inlineDonorName.trim(),
+          email: inlineDonorEmail.trim().toLowerCase(),
+          amount: currentDonation,
+          currency: currency.code,
+          tier: selectedPlan === 'custom' ? 'Custom Offering' : currentTier?.name,
+          frequency: donationFrequency
+        })
+      });
+    } catch (err) {
+      console.warn('Inline donation recording error:', err);
+    } finally {
+      setIsInlineSubmitting(false);
+      setHasDonated(true);
+    }
   };
 
   const handleTogglePreviewAudio = () => {
@@ -165,8 +243,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
       soundEngine.stopAll();
       setIsPlayingPreview(false);
     } else {
-      soundEngine.startCathedralDrone(0.25);
-      soundEngine.playBell(440);
+      soundEngine.playBell(523.25);
       setIsPlayingPreview(true);
     }
   };
@@ -213,7 +290,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono hidden md:block">
-                Catholic Prayers & Spiritual Armor
+                {t.brandSubtitle}
               </p>
             </div>
           </div>
@@ -228,7 +305,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
               }`}
             >
-              Home
+              {t.navHome}
             </button>
             <button
               onClick={() => navigateTo('treasury')}
@@ -238,7 +315,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
               }`}
             >
-              Prayer Treasury
+              {t.navTreasury}
             </button>
             <button
               onClick={() => navigateTo('novenas')}
@@ -248,22 +325,59 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
               }`}
             >
-              Novenas
+              {t.navNovenas}
             </button>
             <button
-              onClick={() => navigateTo('warfare')}
-              className={`px-3 py-1.5 rounded-xl transition ${
-                currentPage === 'warfare'
-                  ? 'bg-gold-500/20 text-gold-200 border border-gold-500/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
-                  : 'text-slate-300 hover:text-gold-300 hover:bg-obsidian-900'
-              }`}
+              onClick={onOpenRosary}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-900 border border-gold-500/30 text-gold-300 hover:bg-gold-500/20 transition text-xs font-semibold"
+              title="Daily Holy Rosary with Latin / English Mode"
             >
-              Spirit Warfare
+              <Disc className="w-3.5 h-3.5 text-gold-400" />
+              <span>{t.navRosary}</span>
+            </button>
+            <button
+              onClick={onOpenIntentions}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-900 border border-gold-500/30 text-gold-300 hover:bg-gold-500/20 transition text-xs font-semibold"
+              title="Community Prayer Intentions Altar"
+            >
+              <Flame className="w-3.5 h-3.5 text-candle-flame" />
+              <span>{t.navIntentions}</span>
+            </button>
+            <button
+              onClick={onOpenConfession}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-900 border border-gold-500/30 text-gold-300 hover:bg-gold-500/20 transition text-xs font-semibold"
+              title="Open Examination of Conscience & Confession Helper"
+            >
+              <Shield className="w-3.5 h-3.5 text-gold-400" />
+              <span>{t.navConfession}</span>
+            </button>
+            <button
+              onClick={onOpenBible}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gold-500/15 hover:bg-gold-500/25 border border-gold-500/40 text-gold-300 transition shadow-[0_0_12px_rgba(212,175,55,0.15)]"
+              title="Open Roman Catholic Holy Bible (73 Books)"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-gold-400" />
+              <span>Catholic Bible</span>
+              <span className="text-[9px] bg-gold-500/20 text-gold-200 px-1 py-0.2 rounded font-mono font-bold">73</span>
             </button>
           </nav>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Multi-Language Switcher (EN, ES, PT) */}
+          <div className="flex items-center bg-obsidian-900 border border-obsidian-800 rounded-xl px-1.5 py-1 text-xs">
+            <Languages className="w-3.5 h-3.5 text-gold-400 mr-1 hidden sm:inline" />
+            <select
+              value={lang}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="bg-transparent text-gold-300 font-mono text-[11px] font-bold focus:outline-none cursor-pointer"
+            >
+              <option value="en" className="bg-obsidian-950 text-slate-200">EN</option>
+              <option value="es" className="bg-obsidian-950 text-slate-200">ES</option>
+              <option value="pt" className="bg-obsidian-950 text-slate-200">PT</option>
+            </select>
+          </div>
+
           {/* Liturgical Calendar Trigger */}
           <button
             onClick={onOpenCalendar}
@@ -271,7 +385,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             title="Open Catholic Liturgical Calendar"
           >
             <CalendarIcon className="w-4 h-4 text-emerald-400" />
-            <span className="hidden sm:inline">Liturgical Calendar</span>
+            <span className="hidden sm:inline">{t.liturgicalCalendar}</span>
           </button>
 
           {/* Pay It Forward Benefactor Trigger */}
@@ -280,7 +394,17 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-300 font-semibold text-xs hover:bg-gold-500/20 active:scale-95 transition"
           >
             <Heart className="w-3.5 h-3.5 text-red-400 fill-current" />
-            <span>Pay It Forward</span>
+            <span>{t.payItForward}</span>
+          </button>
+
+          {/* Pilgrim Benefactor Portal Button */}
+          <button
+            onClick={onOpenProfile}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-900 border border-obsidian-800 text-xs text-slate-300 hover:text-gold-300 hover:border-gold-500/40 transition active:scale-95"
+            title="My Pilgrim Profile & Benefactor Portal"
+          >
+            <User className="w-3.5 h-3.5 text-gold-400" />
+            <span className="hidden sm:inline">My Portal</span>
           </button>
 
           {/* Mobile Hamburger Menu Toggle */}
@@ -297,6 +421,32 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
       {/* MOBILE DRAWER NAVIGATION */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-x-0 top-[57px] z-40 bg-obsidian-950/95 backdrop-blur-2xl border-b border-obsidian-800 p-4 space-y-2 animate-in slide-in-from-top-4 duration-200 shadow-2xl">
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onOpenProfile && onOpenProfile();
+            }}
+            className="w-full text-left px-4 py-2.5 rounded-xl font-medium text-xs bg-gold-500/15 text-gold-200 border border-gold-500/40 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-gold-400" />
+              <span className="font-semibold">My Pilgrim & Benefactor Portal</span>
+            </div>
+            <span className="text-[10px] bg-gold-500/20 text-gold-300 px-1.5 py-0.5 rounded font-mono">My Giving</span>
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onOpenBible && onOpenBible();
+            }}
+            className="w-full text-left px-4 py-2.5 rounded-xl font-medium text-xs bg-gold-500/20 text-gold-200 border border-gold-500/50 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-gold-400" />
+              <span className="font-semibold">The Catholic Bible (73 Books)</span>
+            </div>
+            <span className="text-[10px] bg-gold-500/30 text-gold-200 px-1.5 py-0.5 rounded font-mono">NABRE / NRSVCE</span>
+          </button>
           <button
             onClick={() => navigateTo('home')}
             className={`w-full text-left px-4 py-3 rounded-xl font-serif text-sm font-semibold transition flex items-center justify-between ${
@@ -322,6 +472,45 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             }`}
           >
             <span>Novenas (12 Traditional)</span>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onOpenRosary && onOpenRosary();
+            }}
+            className="w-full text-left px-4 py-3 rounded-xl font-serif text-sm font-semibold transition flex items-center justify-between text-gold-300 hover:bg-obsidian-900 border border-gold-500/30"
+          >
+            <div className="flex items-center gap-2">
+              <Disc className="w-4 h-4 text-gold-400" />
+              <span>Daily Holy Rosary (Latin/English)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onOpenIntentions && onOpenIntentions();
+            }}
+            className="w-full text-left px-4 py-3 rounded-xl font-serif text-sm font-semibold transition flex items-center justify-between text-candle-flame hover:bg-obsidian-900 border border-gold-500/30"
+          >
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-candle-flame" />
+              <span>Community Intentions Altar</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              onOpenConfession && onOpenConfession();
+            }}
+            className="w-full text-left px-4 py-3 rounded-xl font-serif text-sm font-semibold transition flex items-center justify-between text-gold-300 hover:bg-obsidian-900 border border-gold-500/30"
+          >
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-gold-400" />
+              <span>Examination & Confession Helper</span>
+            </div>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
           <button
@@ -360,20 +549,20 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-xs text-gold-300 font-medium">
                 <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                <span>Ephesians 6:11 • Put on the whole armour of God</span>
+                <span>{t.ephesiansBadge}</span>
               </div>
 
               {/* Hero Headline */}
               <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-slate-100 tracking-tight leading-[1.15]">
-                A Sacred Catholic Shield for <br className="hidden sm:inline" />
+                {t.heroTitlePart1} <br className="hidden sm:inline" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-amber-500">
-                  Nighttime Fear & Spiritual Combat
+                  {t.heroTitlePart2}
                 </span>
               </h1>
 
               {/* Sub-headline */}
               <p className="text-sm sm:text-base text-slate-300 max-w-2xl font-light leading-relaxed">
-                Authentic Latin and English Catholic prayers, loopable night psalms, and complete 9-day novenas with authentic studio vocal narration and monastic choir soundscapes. 100% free from ads and paywalls.
+                {t.heroSubtitle}
               </p>
 
               {/* Primary Action Buttons */}
@@ -383,15 +572,31 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-95 transition"
                 >
                   <BookOpen className="w-4 h-4 text-obsidian-950" />
-                  <span>Prayer Treasury</span>
+                  <span>{t.btnTreasury}</span>
+                </button>
+
+                <button
+                  onClick={onOpenRosary}
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-obsidian-900 border border-gold-500/40 text-gold-200 font-bold text-sm hover:bg-obsidian-850 hover:border-gold-400 active:scale-95 transition"
+                >
+                  <Disc className="w-4 h-4 text-gold-400" />
+                  <span>{t.btnRosary}</span>
+                </button>
+
+                <button
+                  onClick={onOpenIntentions}
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-obsidian-900 border border-gold-500/40 text-candle-flame font-bold text-sm hover:bg-obsidian-850 hover:border-gold-400 active:scale-95 transition"
+                >
+                  <Flame className="w-4 h-4 text-candle-flame" />
+                  <span>{t.btnIntentions}</span>
                 </button>
 
                 <button
                   onClick={() => navigateTo('novenas')}
-                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-obsidian-900 border border-gold-500/40 text-gold-200 font-bold text-sm hover:bg-obsidian-850 hover:border-gold-400 active:scale-95 transition"
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-obsidian-900 border border-obsidian-800 text-slate-300 font-bold text-sm hover:text-gold-200 active:scale-95 transition"
                 >
                   <Sparkles className="w-4 h-4 text-gold-400" />
-                  <span>9-Day Novenas</span>
+                  <span>{t.btnNovenas}</span>
                 </button>
 
                 <button
@@ -399,7 +604,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-obsidian-900 border border-red-500/40 text-red-200 font-bold text-sm hover:bg-obsidian-850 hover:border-red-400 active:scale-95 transition"
                 >
                   <Sword className="w-4 h-4 text-red-400" />
-                  <span>Spirit Warfare</span>
+                  <span>{t.btnWarfare}</span>
                 </button>
 
                 {/* Acoustic Soundscape Preview Button */}
@@ -409,7 +614,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   title="Test Sacred Sound Engine"
                 >
                   <Volume2 className="w-4 h-4 text-gold-400" />
-                  <span>{isPlayingPreview ? 'Silence Audio' : 'Cathedral Chime'}</span>
+                  <span>{isPlayingPreview ? t.btnSilenceAudio : t.btnCathedralChime}</span>
                 </button>
               </div>
             </div>
@@ -419,7 +624,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
           <section className="py-8 px-4 sm:px-8 max-w-4xl mx-auto">
             <div className="mb-3 text-center">
               <span className="text-[11px] font-mono text-gold-400 uppercase tracking-widest block">LITURGIA HORARUM</span>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-slate-100">Daily Catholic Responsorial Psalm</h2>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-slate-100">{t.dailyPsalmHeading}</h2>
             </div>
             <DailyPsalmCard onPlayPrayer={onPlayPrayer} />
           </section>
@@ -430,10 +635,10 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
               <div className="text-center max-w-2xl mx-auto space-y-3">
                 <span className="text-xs font-mono text-gold-400 uppercase tracking-widest">FORGED FOR SOULS</span>
                 <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-100">
-                  When You Need Spiritual Reinforcements
+                  {t.reinforcementsSubtitle}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400">
-                  Not just another prayer directory. Lorica was forged specifically for moments of panic, spiritual warfare, insomnia, and deep intercession.
+                  {t.reinforcementsDesc}
                 </p>
               </div>
 
@@ -446,12 +651,12 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
                     <ShieldAlert className="w-6 h-6" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold text-red-200">Spirit Warfare & SOS</h3>
+                  <h3 className="font-serif text-lg font-bold text-red-200">{t.pillarWarfareTitle}</h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                    When you feel spiritually oppressed or panicked, deploy Pope Leo XIII's St. Michael battle prayer, the St. Benedict exorcism blessing, and ancient Celtic breastplates.
+                    {t.pillarWarfareDesc}
                   </p>
                   <div className="text-xs text-red-400 font-semibold font-mono flex items-center gap-1 group-hover:underline">
-                    <span>Explore Spirit Warfare</span>
+                    <span>{t.pillarWarfareBtn}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -464,12 +669,12 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   <div className="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 group-hover:scale-110 transition-transform">
                     <Sparkles className="w-6 h-6" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold text-gold-200">12 Complete Novenas</h3>
+                  <h3 className="font-serif text-lg font-bold text-gold-200">{t.pillarNovenasTitle}</h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                    Full 9-day devotional journeys for impossible causes, spiritual breakthrough, and patron saint intercession with the complete 5-decade Holy Rosary.
+                    {t.pillarNovenasDesc}
                   </p>
                   <div className="text-xs text-gold-400 font-semibold font-mono flex items-center gap-1 group-hover:underline">
-                    <span>View 12 Catholic Novenas</span>
+                    <span>{t.pillarNovenasBtn}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -482,12 +687,12 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
                     <BookOpen className="w-6 h-6" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold text-amber-200">Catholic Prayer Treasury</h3>
+                  <h3 className="font-serif text-lg font-bold text-amber-200">{t.pillarTreasuryTitle}</h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                    7 Pray categories and 5 Learn categories: Morning and Night Compline, Eucharistic Adoration, Marian Litanies, and Patristic Latin chants.
+                    {t.pillarTreasuryDesc}
                   </p>
                   <div className="text-xs text-amber-400 font-semibold font-mono flex items-center gap-1 group-hover:underline">
-                    <span>Browse Full Treasury</span>
+                    <span>{t.pillarTreasuryBtn}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -593,7 +798,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                             </div>
 
                             <div className="text-right shrink-0">
-                              <span className="font-mono text-base font-bold text-gold-300">${price}</span>
+                              <span className="font-mono text-base font-bold text-gold-300">{currency.symbol}{price.toLocaleString()}</span>
                               <span className="text-[10px] text-slate-500 block">
                                 {donationFrequency === 'monthly' ? '/month' : 'one-time'}
                               </span>
@@ -622,7 +827,7 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                         </div>
 
                         <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-mono text-sm font-bold">$</span>
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-mono text-sm font-bold">{currency.symbol}</span>
                           <input
                             type="number"
                             min="1"
@@ -634,25 +839,69 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                               setSelectedPlan('custom');
                               setCustomAmount(e.target.value);
                             }}
-                            className="w-full pl-7 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
+                            className="w-full pl-9 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
                           />
                         </div>
                       </div>
                     </div>
 
+                    {/* Donor Contact Intake (Full Name & Email) */}
+                    <div className="p-4 rounded-2xl bg-obsidian-950/80 border border-gold-500/30 space-y-3">
+                      <div className="flex items-center gap-2 text-gold-300 font-serif font-bold text-xs">
+                        <User className="w-3.5 h-3.5 text-gold-400" />
+                        <span>Benefactor Registry & Account</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+                            Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. John Doe"
+                            value={inlineDonorName}
+                            onChange={(e) => setInlineDonorName(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-xs outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="you@example.com"
+                            value={inlineDonorEmail}
+                            onChange={(e) => setInlineDonorEmail(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-xs font-mono outline-none"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-tight">
+                        Used to send your receipt, link your Holy Mass remembrance, and give you 1-click access to view or cancel subscriptions in your Pilgrim Portal.
+                      </p>
+                    </div>
+
                     {/* CTA Button */}
                     <button
                       type="submit"
-                      disabled={currentDonation <= 0}
+                      disabled={currentDonation <= 0 || isInlineSubmitting}
                       className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-40"
                     >
                       <Heart className="w-4 h-4 fill-obsidian-950" />
-                      <span>Pay It Forward & Keep Lorica Free</span>
+                      <span>{isInlineSubmitting ? 'Registering Pledge...' : `Pay It Forward & Keep Lorica Free (${currency.symbol}${Number(currentDonation).toLocaleString()})`}</span>
                     </button>
 
-                    <p className="text-[10px] text-center text-slate-500 pt-1">
-                      Zero commitment • Cancel anytime with one tap • A monthly Holy Mass is offered for all Benefactors
-                    </p>
+                    <div className="space-y-1.5 pt-1 text-center">
+                      <p className="text-[10px] text-slate-400">
+                        Zero commitment • Cancel anytime with one tap • A monthly Holy Mass is offered for all Benefactors
+                      </p>
+                      <p className="text-[9px] text-slate-500 leading-relaxed max-w-sm mx-auto font-sans">
+                        Lorica is developed and maintained by <span className="text-gold-400/90 font-medium">Xydris</span>. All voluntary Pay-It-Forward contributions directly subsidize server infrastructure, vocal recordings, and free access worldwide. Contributions are voluntary digital patronage and not tax-deductible charitable gifts under Section 80G.
+                      </p>
+                    </div>
                   </form>
                 </div>
               ) : (
@@ -763,8 +1012,182 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
               </div>
             </div>
 
-            {/* Prayers / Items in Section */}
-            {currentSection.items && (
+            {/* Novenas Category Direct Grid */}
+            {currentSection.id === 'novenas' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {NOVENAS_DATA
+                    .filter((novena) => {
+                      if (!treasurySearch) return true;
+                      const query = treasurySearch.toLowerCase();
+                      return (
+                        novena.title.toLowerCase().includes(query) ||
+                        (novena.purpose && novena.purpose.toLowerCase().includes(query)) ||
+                        (novena.description && novena.description.toLowerCase().includes(query))
+                      );
+                    })
+                    .map((novena) => (
+                      <div
+                        key={novena.id}
+                        onClick={() => onSelectNovena(novena)}
+                        className="p-4 rounded-2xl bg-obsidian-950 border border-obsidian-800 hover:border-gold-500/50 hover:bg-obsidian-900 cursor-pointer flex flex-col justify-between gap-3 group transition shadow-md active:scale-99"
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-400 font-bold">
+                              {novena.group}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">{novena.feastDate}</span>
+                          </div>
+                          <h4 className="font-serif font-bold text-sm text-slate-100 group-hover:text-gold-200 transition">
+                            {novena.title}
+                          </h4>
+                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                            {novena.purpose || novena.description}
+                          </p>
+                        </div>
+                        <div className="pt-2 border-t border-obsidian-800 flex items-center justify-between text-xs text-gold-400 font-medium group-hover:text-gold-300">
+                          <span className="font-mono text-[11px]">Begin 9-Day Novena</span>
+                          <div className="w-7 h-7 rounded-full bg-obsidian-900 border border-gold-500/30 flex items-center justify-center text-gold-400 group-hover:bg-gold-500 group-hover:text-obsidian-950 transition shrink-0">
+                            <Play className="w-3 h-3 fill-current" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Seasons Category Direct Display */}
+            {currentSection.id === 'seasons' && currentSection.currentSeason && (
+              <div className="space-y-6">
+                <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-obsidian-900 to-obsidian-950 border border-emerald-500/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">
+                      CURRENT LITURGICAL SEASON
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">Vestment Color: {currentSection.currentSeason.color}</span>
+                  </div>
+                  <h4 className="font-serif text-xl font-bold text-slate-100">{currentSection.currentSeason.name}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{currentSection.currentSeason.meaning}</p>
+                  <p className="text-xs text-gold-400/90 pt-1">Next: {currentSection.currentSeason.nextSeason}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                  {currentSection.calendar.map((c, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-obsidian-950 border border-obsidian-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <h5 className="font-serif font-bold text-sm text-gold-200">{c.name}</h5>
+                        <span className="text-[10px] font-mono text-slate-400">{c.color}</span>
+                      </div>
+                      <p className="text-xs text-slate-400">{c.focus}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bible Verses Category Direct Display */}
+            {currentSection.id === 'bible-verses' && currentSection.categories && (
+              <div className="space-y-6">
+                {currentSection.categories.map((cat, idx) => (
+                  <div key={idx} className="space-y-3">
+                    <h4 className="font-serif text-base font-bold text-gold-200 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-gold-400" />
+                      <span>{cat.topic}</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {cat.verses.map((v, vIdx) => (
+                        <div key={vIdx} className="p-4 rounded-2xl bg-obsidian-950 border border-obsidian-800 space-y-2 flex flex-col justify-between">
+                          <p className="font-reading italic text-xs text-slate-300 leading-relaxed">
+                            "{v.text}"
+                          </p>
+                          <span className="text-[11px] font-mono text-gold-400 block pt-1 border-t border-obsidian-850">
+                            — {v.ref}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Guides Category Display (LEARN) */}
+            {currentSection.id === 'guides' && currentSection.items && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentSection.items
+                  .filter(item => !treasurySearch || item.title.toLowerCase().includes(treasurySearch.toLowerCase()))
+                  .map((guide, idx) => (
+                    <div key={idx} className="p-5 rounded-2xl bg-obsidian-950 border border-obsidian-800 space-y-3.5 shadow-md">
+                      <div className="flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-gold-400" />
+                        <h4 className="font-serif font-bold text-base text-gold-200">{guide.title}</h4>
+                      </div>
+                      <ol className="space-y-2">
+                        {guide.steps.map((step, sIdx) => (
+                          <li key={sIdx} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed">
+                            <span className="w-5 h-5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                              {sIdx + 1}
+                            </span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Free Tools Category Display (LEARN) */}
+            {currentSection.id === 'free-tools' && currentSection.items && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {currentSection.items
+                  .filter(item => !treasurySearch || (item.name && item.name.toLowerCase().includes(treasurySearch.toLowerCase())) || (item.desc && item.desc.toLowerCase().includes(treasurySearch.toLowerCase())))
+                  .map((tool, idx) => (
+                    <div key={idx} className="p-5 rounded-2xl bg-obsidian-950 border border-obsidian-800 hover:border-gold-500/40 transition space-y-3 shadow-md flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-400 font-bold">
+                            FREE SANCTUARY TOOL
+                          </span>
+                        </div>
+                        <h4 className="font-serif font-bold text-base text-slate-100">{tool.name}</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">{tool.desc}</p>
+                      </div>
+                      <button
+                        onClick={onLaunchApp}
+                        className="w-full py-2.5 rounded-xl bg-obsidian-900 border border-gold-500/30 text-xs font-semibold text-gold-300 hover:bg-gold-500 hover:text-obsidian-950 transition flex items-center justify-center gap-2 shadow"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Launch in Sanctuary App</span>
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Explained Category Display (LEARN) */}
+            {currentSection.id === 'explained' && currentSection.items && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentSection.items
+                  .filter(item => !treasurySearch || (item.q && item.q.toLowerCase().includes(treasurySearch.toLowerCase())) || (item.a && item.a.toLowerCase().includes(treasurySearch.toLowerCase())))
+                  .map((faq, idx) => (
+                    <div key={idx} className="p-5 rounded-2xl bg-obsidian-950 border border-obsidian-800 space-y-2.5 shadow-md">
+                      <h4 className="font-serif font-bold text-sm text-gold-200 flex items-start gap-2">
+                        <span className="text-gold-400 font-mono text-xs mt-0.5">Q.</span>
+                        <span>{faq.q}</span>
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed pl-4 border-l-2 border-gold-500/30">
+                        {faq.a}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Prayers / Items in Section (PRAY) */}
+            {activeTabGroup === 'PRAY' && currentSection.items && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {currentSection.items
                   .filter((item) => {
@@ -776,46 +1199,53 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
                       (item.desc && item.desc.toLowerCase().includes(query))
                     );
                   })
-                  .map((item, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        const existing = PRAYERS_DATA.find(p => p.id === item.prayerId || p.id === item.id);
-                        if (existing) {
-                          onPlayPrayer(existing);
-                        } else {
-                          onPlayPrayer({
-                            id: item.id || `prayer-${Date.now()}`,
-                            title: item.title || item.name,
-                            category: currentSection.title,
-                            duration: item.duration || "2:30",
-                            description: item.desc || item.theme,
-                            verses: [
-                              { id: 1, text: `${item.title || item.name}. In the Name of the Father, and of the Son, and of the Holy Spirit. Amen.` },
-                              { id: 2, text: item.desc || item.theme || "Lord Jesus Christ, hear our prayers and enfold us in Your divine mercy." },
-                              { id: 3, text: "Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be. Amen." }
-                            ]
-                          });
-                        }
-                      }}
-                      className="p-4 rounded-2xl bg-obsidian-950 border border-obsidian-800 hover:border-gold-500/50 hover:bg-obsidian-900 cursor-pointer flex items-center justify-between gap-3 group transition shadow-md active:scale-99"
-                    >
-                      <div>
-                        <h4 className="font-serif text-sm font-bold text-slate-100 group-hover:text-gold-200 transition">
-                          {item.title || item.name}
-                        </h4>
-                        <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">
-                          {item.desc || item.theme}
-                        </p>
-                        {item.duration && (
-                          <span className="text-[10px] text-gold-400 font-mono mt-1 block">{item.duration}</span>
-                        )}
+                  .map((item, idx) => {
+                    const existing = PRAYERS_DATA.find(p => p.id === item.prayerId || p.id === item.id);
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          if (existing) {
+                            onPlayPrayer(existing);
+                          } else {
+                            onPlayPrayer({
+                              id: item.id || `prayer-${Date.now()}`,
+                              title: item.title || item.name,
+                              category: currentSection.title,
+                              duration: item.duration || "2:30",
+                              description: item.desc || item.theme,
+                              verses: [
+                                { id: 1, text: `${item.title || item.name}. In the Name of the Father, and of the Son, and of the Holy Spirit. Amen.` },
+                                { id: 2, text: item.desc || item.theme || "Lord Jesus Christ, hear our prayers and enfold us in Your divine mercy." },
+                                { id: 3, text: "Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be. Amen." }
+                              ]
+                            });
+                          }
+                        }}
+                        className="p-4 rounded-2xl bg-obsidian-950 border border-obsidian-800 hover:border-gold-500/50 hover:bg-obsidian-900 cursor-pointer flex items-center justify-between gap-3 group transition shadow-md active:scale-99"
+                      >
+                        <div className="space-y-1">
+                          <h4 className="font-serif text-sm font-bold text-slate-100 group-hover:text-gold-200 transition">
+                            {item.title || item.name}
+                          </h4>
+                          <p className="text-xs text-slate-400 line-clamp-1">
+                            {item.desc || item.theme}
+                          </p>
+                          <div className="flex items-center gap-2 pt-0.5">
+                            {item.duration && (
+                              <span className="text-[10px] text-gold-400 font-mono">{item.duration}</span>
+                            )}
+                            {existing && existing.verses && (
+                              <span className="text-[10px] text-slate-500 font-mono">• {existing.verses.length} verses</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="w-9 h-9 rounded-full bg-obsidian-900 border border-gold-500/30 flex items-center justify-center text-gold-400 group-hover:bg-gold-500 group-hover:text-obsidian-950 transition shrink-0 shadow">
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                        </div>
                       </div>
-                      <div className="w-9 h-9 rounded-full bg-obsidian-900 border border-gold-500/30 flex items-center justify-center text-gold-400 group-hover:bg-gold-500 group-hover:text-obsidian-950 transition shrink-0 shadow">
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             )}
 
@@ -1141,20 +1571,38 @@ export default function WebsiteView({ onLaunchApp, onPlayPrayer, onOpenBenefacto
             </ul>
           </div>
 
-          {/* Col 4: Tools & Benefactor */}
+          {/* Col 4: Tools, Legal & Contact */}
           <div className="space-y-2 text-xs">
-            <span className="font-semibold text-slate-200 uppercase tracking-wider block font-mono text-[11px]">TOOLS & COMMUNITY</span>
+            <span className="font-semibold text-slate-200 uppercase tracking-wider block font-mono text-[11px]">ABOUT & CONTACT</span>
             <ul className="space-y-1.5 text-slate-400">
-              <li><button onClick={onOpenCalendar} className="hover:text-gold-300 text-left flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5 text-emerald-400" /> Liturgical Calendar</button></li>
-              <li><button onClick={onOpenBenefactor} className="hover:text-gold-300 text-left flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-red-400" /> Pay It Forward</button></li>
+              <li><a href="/about.html" className="hover:text-gold-300 block">About Lorica</a></li>
+              <li><a href="/contact.html" className="hover:text-gold-300 block">Contact Us</a></li>
+              <li><a href="mailto:info@xydris.in" className="hover:text-gold-300 text-gold-400 flex items-center gap-1">info@xydris.in</a></li>
+              <li><a href="/privacy.html" className="hover:text-gold-300 block">Privacy Policy</a></li>
+              <li><a href="/terms.html" className="hover:text-gold-300 block">Terms of Service</a></li>
+              <li><a href="/llms.txt" className="hover:text-gold-300 block font-mono text-[10px]">llms.txt (Agent Index)</a></li>
+              <li><button onClick={onOpenBenefactor} className="hover:text-gold-300 text-left flex items-center gap-1.5 pt-1"><Heart className="w-3.5 h-3.5 text-red-400" /> Pay It Forward</button></li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 border-t border-obsidian-850 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <p>© 2026 Lorica. Designed and maintained by <a href="https://xydris.in" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 underline underline-offset-2">Xydris.in</a></p>
+          <div className="space-y-1 text-center sm:text-left">
+            <p>© 2026 Lorica. Maintained by <a href="https://xydris.in" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 underline underline-offset-2">Xydris.in</a> • Inquiries: <a href="mailto:info@xydris.in" className="text-slate-300 hover:text-gold-300">info@xydris.in</a></p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[10px] text-slate-400">
+              <a href="/about.html" className="hover:text-gold-300">About</a>
+              <span>•</span>
+              <a href="/contact.html" className="hover:text-gold-300">Contact</a>
+              <span>•</span>
+              <a href="/privacy.html" className="hover:text-gold-300">Privacy Policy</a>
+              <span>•</span>
+              <a href="/terms.html" className="hover:text-gold-300">Terms</a>
+              <span>•</span>
+              <a href="/llms.txt" className="hover:text-gold-300 font-mono">llms.txt</a>
+            </div>
+          </div>
           <div className="flex items-center gap-4 text-gold-400/70 font-serif italic">
-            <span>Benedicat vos omnipotens Deus</span>
+            <span>Benedicat vos omnipotens Deus</span><a href="#admin" title="Admin" className="opacity-0 hover:opacity-100 text-[10px] text-slate-700 transition cursor-default select-none">•</a>
           </div>
         </div>
       </footer>

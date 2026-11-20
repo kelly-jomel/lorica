@@ -13,19 +13,43 @@ import {
   Compass,
   Volume2,
   Heart,
+  BookOpen,
   Calendar
 } from 'lucide-react';
 import { CRISIS_CAROUSEL, PRAYERS_DATA } from '../data/prayersData';
 import DailyPsalmCard from './DailyPsalmCard';
 
-export default function SanctuaryView({ onPlayPrayer, setActiveTab, unreadCandlesCount = 5, onOpenBenefactor, onOpenCalendar }) {
+export default function SanctuaryView({ onPlayPrayer, setActiveTab, unreadCandlesCount = 5, onOpenBenefactor, onOpenCalendar, onOpenBible }) {
   const featuredPrayer = PRAYERS_DATA.find(p => p.id === 'psalm-91');
   const warfarePrayer = PRAYERS_DATA.find(p => p.id === 'st-michael');
 
   return (
     <div className="space-y-6 pb-28 pt-2">
+      {/* Roman Catholic Scripture & Daily Responsorial Psalm Banner */}
+      <section className="p-4 rounded-3xl bg-gradient-to-r from-gold-500/15 via-obsidian-900 to-obsidian-900 border border-gold-500/40 shadow-xl flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gold-500/20 border border-gold-500/50 flex items-center justify-center text-gold-300 shrink-0">
+            <BookOpen className="w-5 h-5 text-gold-400" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-serif font-bold text-gold-200">The Holy Catholic Bible</h2>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold-500/20 text-gold-300 font-mono font-bold">73 Books</span>
+            </div>
+            <p className="text-xs text-slate-400">NABRE & NRSVCE with Deuterocanonical Books</p>
+          </div>
+        </div>
+        <button
+          onClick={onOpenBible}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gold-500/20 hover:bg-gold-500/30 border border-gold-500/50 text-gold-200 text-xs font-semibold transition active:scale-95 shrink-0"
+        >
+          <span>Open</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </section>
+
       {/* Daily Responsorial Psalm Component */}
-      <DailyPsalmCard onPlayPrayer={onPlayPrayer} />
+      <DailyPsalmCard onPlayPrayer={onPlayPrayer} onOpenBible={onOpenBible} />
 
       {/* "Need Reinforcements?" Emergency Crisis Carousel */}
       <section>

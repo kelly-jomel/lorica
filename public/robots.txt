@@ -1,5 +1,9 @@
 User-agent: *
+Content-Signal: search=yes, ai-train=no
 Allow: /
 
+# Directives for AI Crawlers and Agents
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+
 # Hostinger Sitemap Index
-Sitemap: https://clear-white-pheasant-53.hostingersite.com/sitemap.xml
+Sitemap: https://loricaprayers.com/sitemap.xml

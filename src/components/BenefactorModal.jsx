@@ -1,12 +1,46 @@
-import React, { useState } from 'react';
-import { Heart, Sparkles, X, Check, Shield, Flame } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Heart, Sparkles, X, Check, Shield, Flame, Globe, User, Mail } from 'lucide-react';
 import { soundEngine } from '../services/soundEngine';
+import { currencyService, SUPPORTED_CURRENCIES } from '../services/currencyService';
+import { authService } from '../services/authService';
 
-export default function BenefactorModal({ isOpen, onClose }) {
+export default function BenefactorModal({ isOpen, onClose, onOpenProfile }) {
+  const [currency, setCurrency] = useState(() => currencyService.getCurrency());
   const [selectedPlan, setSelectedPlan] = useState('warrior'); // 'guardian' | 'warrior' | 'pillar' | 'custom'
   const [frequency, setFrequency] = useState('monthly'); // 'monthly' | 'one-time'
-  const [customAmount, setCustomAmount] = useState('25');
+  const [customAmount, setCustomAmount] = useState(() => String(currencyService.getCurrency().defaultCustom));
+  const [donorName, setDonorName] = useState('');
+  const [donorEmail, setDonorEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPledged, setIsPledged] = useState(false);
+
+  useEffect(() => {
+    // Auto-fill if signed in
+    const user = authService.getUser();
+    if (user) {
+      if (user.name) setDonorName(user.name);
+      if (user.email) setDonorEmail(user.email);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Auto-detect country/currency on mount
+    currencyService.autoDetect().then((c) => {
+      if (c) {
+        setCurrency(c);
+        setCustomAmount(String(c.defaultCustom));
+      }
+    });
+
+    const unsubscribe = currencyService.subscribe((newCurr) => {
+      if (newCurr) {
+        setCurrency(newCurr);
+        setCustomAmount(String(newCurr.defaultCustom));
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -14,8 +48,8 @@ export default function BenefactorModal({ isOpen, onClose }) {
     {
       id: 'guardian',
       name: 'Guardian Benefactor',
-      monthlyPrice: 5,
-      oneTimePrice: 20,
+      monthlyPrice: currency.guardian.monthly,
+      oneTimePrice: currency.guardian.oneTime,
       soulsImpact: '10 Souls Sponsored',
       desc: 'Ensures free audio prayers and sleep peace for 10 people battling anxiety or insomnia each month.',
       icon: Shield,
@@ -24,8 +58,8 @@ export default function BenefactorModal({ isOpen, onClose }) {
     {
       id: 'warrior',
       name: 'St. Michael Warrior',
-      monthlyPrice: 15,
-      oneTimePrice: 50,
+      monthlyPrice: currency.warrior.monthly,
+      oneTimePrice: currency.warrior.oneTime,
       soulsImpact: '35 Souls Sponsored',
       desc: 'Funds continuous server bandwidth, scripture translations, and high-fidelity vocal recordings.',
       icon: Flame,
@@ -35,8 +69,8 @@ export default function BenefactorModal({ isOpen, onClose }) {
     {
       id: 'pillar',
       name: 'Sanctuary Pillar',
-      monthlyPrice: 30,
-      oneTimePrice: 100,
+      monthlyPrice: currency.pillar.monthly,
+      oneTimePrice: currency.pillar.oneTime,
       soulsImpact: '75 Souls Sponsored',
       desc: 'Endows new sacred audio production, Gregorian choir recording sessions, and parish outreach.',
       icon: Sparkles,
@@ -49,25 +83,64 @@ export default function BenefactorModal({ isOpen, onClose }) {
     selectedPlan === 'custom'
       ? parseFloat(customAmount) || 0
       : frequency === 'monthly'
-      ? currentTier?.monthlyPrice || 15
-      : currentTier?.oneTimePrice || 50;
+      ? currentTier?.monthlyPrice || currency.warrior.monthly
+      : currentTier?.oneTimePrice || currency.warrior.oneTime;
 
-  const handlePledgeSubmit = (e) => {
+  const handlePledgeSubmit = async (e) => {
     e.preventDefault();
     if (activeAmount <= 0) return;
+    if (!donorName.trim() || !donorEmail.trim()) {
+      alert('Please enter your Full Name and Email Address so we can register your benefaction.');
+      return;
+    }
+
+    setIsSubmitting(true);
     soundEngine.init();
     soundEngine.playBell(523.25); // Resonant cathedral bell
-    setIsPledged(true);
+
+    try {
+      // Record donation in user ledger
+      await fetch('/api/user-handler.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record_donation',
+          name: donorName.trim(),
+          email: donorEmail.trim().toLowerCase(),
+          amount: activeAmount,
+          currency: currency.code,
+          tier: selectedPlan === 'custom' ? 'Custom Offering' : currentTier?.name,
+          frequency: frequency
+        })
+      });
+
+      // Save user locally if not already signed in
+      const currentUser = authService.getUser();
+      if (!currentUser) {
+        authService.saveUser({
+          id: 'user_' + Date.now(),
+          name: donorName.trim(),
+          email: donorEmail.trim().toLowerCase(),
+          signedInAt: new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      console.warn('Donation recording notification error:', err);
+    } finally {
+      setIsSubmitting(false);
+      setIsPledged(true);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-obsidian-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-obsidian-850 via-obsidian-900 to-obsidian-950 border border-gold-500/40 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-8">
+    <div className="fixed inset-0 z-50 bg-obsidian-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-obsidian-850 via-obsidian-900 to-obsidian-950 border border-gold-500/40 p-5 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 my-auto max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-100 p-1.5 rounded-full bg-obsidian-900 border border-obsidian-800 transition active:scale-95"
+          className="sticky top-0 float-right -mr-1 -mt-1 text-slate-400 hover:text-slate-100 p-2 rounded-full bg-obsidian-900/90 border border-obsidian-800 transition active:scale-95 z-20 backdrop-blur"
+          title="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {!isPledged ? (
@@ -84,6 +157,29 @@ export default function BenefactorModal({ isOpen, onClose }) {
               <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
                 We believe nobody should ever have to pay to pray. Lorica has zero ads and zero paywalls. Every prayer, sleep loop, and novena is funded entirely by users who choose to pay it forward.
               </p>
+            </div>
+
+            {/* Currency Selector Bar */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-obsidian-950 border border-obsidian-800 text-xs">
+              <div className="flex items-center gap-2 text-slate-400">
+                <Globe className="w-3.5 h-3.5 text-gold-400" />
+                <span className="text-[11px] font-mono">Location Currency:</span>
+                <span className="text-gold-300 font-bold flex items-center gap-1">
+                  <span>{currency.flag}</span>
+                  <span>{currency.code} ({currency.symbol})</span>
+                </span>
+              </div>
+              <select
+                value={currency.code}
+                onChange={(e) => currencyService.setCurrency(e.target.value)}
+                className="bg-obsidian-900 border border-obsidian-750 text-gold-200 rounded-lg px-2 py-1 text-[11px] font-mono outline-none cursor-pointer hover:border-gold-500/50"
+              >
+                {Object.values(SUPPORTED_CURRENCIES).map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code} ({c.symbol})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Live Impact Proof Metric */}
@@ -170,7 +266,9 @@ export default function BenefactorModal({ isOpen, onClose }) {
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="font-mono text-base font-bold text-gold-300">${price}</span>
+                        <span className="font-mono text-base font-bold text-gold-300">
+                          {currency.symbol}{price.toLocaleString()}
+                        </span>
                         <span className="text-[10px] text-slate-500 block">
                           {frequency === 'monthly' ? '/month' : 'one-time'}
                         </span>
@@ -200,7 +298,7 @@ export default function BenefactorModal({ isOpen, onClose }) {
 
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gold-400 font-mono text-sm font-bold">
-                      $
+                      {currency.symbol}
                     </span>
                     <input
                       type="number"
@@ -213,27 +311,73 @@ export default function BenefactorModal({ isOpen, onClose }) {
                         setSelectedPlan('custom');
                         setCustomAmount(e.target.value);
                       }}
-                      className="w-full pl-7 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-sm font-mono outline-none"
                     />
                   </div>
+                </div>
+
+                {/* Donor Contact Intake (Full Name & Email) */}
+                <div className="p-4 rounded-2xl bg-obsidian-950/80 border border-gold-500/30 space-y-3">
+                  <div className="flex items-center gap-2 text-gold-300 font-serif font-bold text-xs">
+                    <User className="w-3.5 h-3.5 text-gold-400" />
+                    <span>Benefactor Registry & Account</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. John Doe"
+                        value={donorName}
+                        onChange={(e) => setDonorName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-xs outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="you@example.com"
+                        value={donorEmail}
+                        onChange={(e) => setDonorEmail(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-obsidian-800 focus:border-gold-500 text-slate-100 text-xs font-mono outline-none"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Used to send your receipt, link your Holy Mass remembrance, and give you 1-click access to view or cancel subscriptions in your Pilgrim Portal.
+                  </p>
                 </div>
               </div>
 
               {/* Submit CTA */}
               <button
                 type="submit"
-                disabled={activeAmount <= 0}
+                disabled={activeAmount <= 0 || isSubmitting}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-98 transition flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-40"
               >
                 <Heart className="w-4 h-4 fill-obsidian-950" />
                 <span>
-                  Pay It Forward & Keep Lorica Free
+                  {isSubmitting
+                    ? 'Processing Pledge...'
+                    : `Pay It Forward & Keep Lorica Free (${currency.symbol}${Number(activeAmount).toLocaleString()})`}
                 </span>
               </button>
 
-              <p className="text-[10px] text-center text-slate-500 pt-1">
-                Zero commitment • Cancel anytime with one tap • A monthly Holy Mass is offered for all Benefactors
-              </p>
+              <div className="space-y-1.5 pt-1 text-center">
+                <p className="text-[10px] text-slate-400">
+                  Zero commitment • Cancel anytime with one tap • A monthly Holy Mass is offered for all Benefactors
+                </p>
+                <p className="text-[9px] text-slate-500 leading-relaxed max-w-sm mx-auto font-sans">
+                  Lorica is developed and maintained by <span className="text-gold-400/90 font-medium">Xydris</span>. All voluntary Pay-It-Forward contributions directly subsidize server infrastructure, vocal recordings, and free access worldwide. Contributions are voluntary digital patronage and not tax-deductible charitable gifts under Section 80G.
+                </p>
+              </div>
             </form>
           </div>
         ) : (
@@ -244,15 +388,11 @@ export default function BenefactorModal({ isOpen, onClose }) {
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs font-mono text-gold-400 uppercase tracking-widest">
-                Covenant Confirmed
-              </span>
-              <h3 className="font-serif text-2xl font-bold text-slate-100">God Bless Your Generosity</h3>
-              <p className="text-sm text-gold-300 font-mono">
-                ${activeAmount} {frequency === 'monthly' ? '/ month recurring' : 'one-time gift'} pledged
-              </p>
-              <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed pt-1">
-                You have just ensured that souls experiencing sleepless dread, panic, and spiritual combat will find Christ's peace tonight for free.
+              <h3 className="font-serif text-2xl font-bold text-gold-100">
+                Deo Gratias! May God Reward You
+              </h3>
+              <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
+                Your pledge of <strong className="text-gold-300">{currency.symbol}{Number(activeAmount).toLocaleString()}</strong> {frequency === 'monthly' ? 'monthly' : 'one-time'} ensures that souls in acute anguish, fear, and spiritual battle can access sacred prayer tonight completely free.
               </p>
             </div>
 
@@ -269,15 +409,29 @@ export default function BenefactorModal({ isOpen, onClose }) {
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                setIsPledged(false);
-                onClose();
-              }}
-              className="px-6 py-2.5 rounded-xl bg-obsidian-800 border border-obsidian-700 text-slate-200 text-xs font-semibold hover:bg-obsidian-750 transition cursor-pointer"
-            >
-              Return in Peace
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setIsPledged(false);
+                  onClose();
+                  onOpenProfile && onOpenProfile();
+                }}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gold-500 text-obsidian-950 text-xs font-bold hover:bg-gold-400 transition active:scale-95 shadow flex items-center justify-center gap-2"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>View My Benefactor Portal</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsPledged(false);
+                  onClose();
+                }}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-obsidian-900 border border-gold-500/40 text-xs font-bold text-gold-300 hover:bg-obsidian-850 transition active:scale-95 shadow"
+              >
+                Return to Prayer
+              </button>
+            </div>
           </div>
         )}
       </div>

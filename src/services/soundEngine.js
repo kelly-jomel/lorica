@@ -34,6 +34,45 @@ class SoundEngine {
     }
   }
 
+  // Setup Native Lock Screen / Background Audio Controls via MediaSession API
+  updateMediaSession(metadata = {}) {
+    if (!('mediaSession' in navigator)) return;
+
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: metadata.title || 'Lorica: Catholic Prayers',
+        artist: metadata.artist || metadata.narratorName || 'Sacred Audio Armory',
+        album: metadata.album || metadata.category || 'Lorica Traditional Catholic Devotions',
+        artwork: [
+          { src: '/favicon.png', sizes: '64x64', type: 'image/png' },
+          { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+          { src: '/logo.jpg', sizes: '1024x768', type: 'image/jpeg' }
+        ]
+      });
+
+      // Actions
+      navigator.mediaSession.setActionHandler('play', () => {
+        this.resumeTrack();
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.pauseTrack();
+      });
+
+      navigator.mediaSession.setActionHandler('stop', () => {
+        this.stopTrack();
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime !== undefined) {
+          this.seekTrack(details.seekTime);
+        }
+      });
+    } catch (e) {
+      console.warn("MediaSession API setup error:", e);
+    }
+  }
+
   // =========================================================================
   // 1. STUDIO AUDIO TRACK PLAYER (Real Human Chants & Recordings)
   // =========================================================================
@@ -46,6 +85,13 @@ class SoundEngine {
       this.audioElement.volume = options.volume !== undefined ? options.volume : 0.85;
       this.audioElement.loop = options.loop || false;
 
+      // Update MediaSession lock screen controls
+      this.updateMediaSession({
+        title: options.title || 'Catholic Sacred Prayer',
+        artist: options.narratorName || options.artist || 'Lorica Contemplative Voice',
+        album: options.category || 'Lorica Catholic Library'
+      });
+
       if (options.onTimeUpdate) {
         this.audioElement.ontimeupdate = () => {
           options.onTimeUpdate(this.audioElement.currentTime, this.audioElement.duration || 0);
@@ -55,6 +101,9 @@ class SoundEngine {
       if (options.onEnded) {
         this.audioElement.onended = () => {
           this.isTrackPlaying = false;
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'none';
+          }
           options.onEnded();
         };
       }
@@ -72,6 +121,9 @@ class SoundEngine {
         playPromise
           .then(() => {
             this.isTrackPlaying = true;
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.playbackState = 'playing';
+            }
           })
           .catch((err) => {
             console.warn("Audio autoplay policy or decode error:", err);
@@ -89,6 +141,9 @@ class SoundEngine {
     if (this.audioElement && this.isTrackPlaying) {
       this.audioElement.pause();
       this.isTrackPlaying = false;
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     }
   }
 
@@ -96,6 +151,9 @@ class SoundEngine {
     if (this.audioElement && !this.isTrackPlaying) {
       this.audioElement.play().then(() => {
         this.isTrackPlaying = true;
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'playing';
+        }
       }).catch(e => console.warn("Failed to resume track:", e));
     }
   }

@@ -38,9 +38,13 @@ export default function AudioPlayerModal({ prayer, onClose }) {
   const [sleepTimer, setSleepTimer] = useState(null); // in minutes
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState(null);
 
-  // Mixer volume states
+  // Mixer volume states (Cathedral drone default muted to 0 per user preference)
   const [mainVol, setMainVol] = useState(0.85);
-  const [droneVol, setDroneVol] = useState(0.35);
+  const [droneVol, setDroneVol] = useState(0);
+
+  // Font Scaling & Night Adoration Mode
+  const [fontSize, setFontSize] = useState(1); // 0.9 = compact, 1 = normal, 1.15 = large, 1.3 = XL
+  const [nightAdoration, setNightAdoration] = useState(false); // Amber low-blue-light mode
 
   const verses = prayer?.verses || [];
   const timerIntervalRef = useRef(null);
@@ -68,6 +72,9 @@ export default function AudioPlayerModal({ prayer, onClose }) {
       // 1. MONASTIC CHORAL AUDIO TRACK
       soundEngine.stopSpeech();
       soundEngine.playTrack(defaultTrack, {
+        title: prayer?.title || 'Catholic Sacred Chant',
+        narratorName: prayer?.chantName || 'Monastic Choir',
+        category: prayer?.category || 'Sacred Chants',
         volume: mainVol,
         loop: isLooping,
         onTimeUpdate: (cur, dur) => {
@@ -99,6 +106,9 @@ export default function AudioPlayerModal({ prayer, onClose }) {
 
       if (prayer?.narratorTrack) {
         soundEngine.playTrack(prayer.narratorTrack, {
+          title: prayer?.title || 'Catholic Contemplative Prayer',
+          narratorName: prayer?.narratorName ? `${prayer.narratorName} (Lorica Narration)` : 'Lorica Voice',
+          category: prayer?.category || 'Catholic Devotions',
           volume: mainVol,
           loop: isLooping,
           onTimeUpdate: (cur, dur) => {
@@ -260,6 +270,12 @@ export default function AudioPlayerModal({ prayer, onClose }) {
     return () => clearInterval(timerIntervalRef.current);
   }, [sleepTimerRemaining, isPlaying]);
 
+  // Auto-start playback on modal mount
+  useEffect(() => {
+    setIsPlaying(true);
+    startPlayback(audioMode, 0);
+  }, []);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -291,17 +307,51 @@ export default function AudioPlayerModal({ prayer, onClose }) {
           </h2>
         </div>
 
-        <button
-          onClick={() => setShowMixer(!showMixer)}
-          className={`p-2 rounded-xl border transition ${
-            showMixer 
-              ? 'bg-gold-500/20 border-gold-500/60 text-gold-300' 
-              : 'bg-obsidian-900 border-obsidian-800 text-slate-400 hover:text-slate-200'
-          }`}
-          title="Acoustic Sound Mixer"
-        >
-          <Sliders className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Font Scaling Controls */}
+          <div className="flex items-center bg-obsidian-900 border border-obsidian-800 rounded-xl px-2 py-1 text-xs text-slate-300 gap-1.5">
+            <button 
+              onClick={() => setFontSize(s => Math.max(0.85, s - 0.1))} 
+              className="px-1 hover:text-gold-300 font-bold"
+              title="Decrease Font Size"
+            >
+              A-
+            </button>
+            <span className="text-[10px] text-slate-500 font-mono">|</span>
+            <button 
+              onClick={() => setFontSize(s => Math.min(1.4, s + 0.1))} 
+              className="px-1 hover:text-gold-300 font-bold text-sm"
+              title="Increase Font Size"
+            >
+              A+
+            </button>
+          </div>
+
+          {/* Night Adoration Candlelight Mode */}
+          <button
+            onClick={() => setNightAdoration(v => !v)}
+            className={`p-2 rounded-xl border transition ${
+              nightAdoration
+                ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                : 'bg-obsidian-900 border-obsidian-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Toggle Night Adoration Amber Mode (Low Blue Light)"
+          >
+            <Sparkles className="w-4 h-4 text-candle-flame" />
+          </button>
+
+          <button
+            onClick={() => setShowMixer(!showMixer)}
+            className={`p-2 rounded-xl border transition ${
+              showMixer 
+                ? 'bg-gold-500/20 border-gold-500/60 text-gold-300' 
+                : 'bg-obsidian-900 border-obsidian-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Acoustic Sound Mixer"
+          >
+            <Sliders className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* 2. AUDIO MODE SELECTOR (Monastic Choir vs Contemplative Voice vs Ambient) */}
@@ -372,9 +422,14 @@ export default function AudioPlayerModal({ prayer, onClose }) {
                 <span className={`text-xs font-mono font-bold mt-0.5 shrink-0 ${isActive ? 'text-gold-400' : 'text-slate-500'}`}>
                   {index + 1}
                 </span>
-                <p className={`font-reading text-sm sm:text-base leading-relaxed tracking-wide ${
-                  isActive ? 'text-gold-100 font-medium' : 'text-slate-300'
-                }`}>
+                <p 
+                  style={{ fontSize: `${fontSize}rem` }}
+                  className={`font-reading leading-relaxed tracking-wide transition-all ${
+                    nightAdoration 
+                      ? (isActive ? 'text-amber-200 font-semibold' : 'text-amber-400/80')
+                      : (isActive ? 'text-gold-100 font-medium' : 'text-slate-300')
+                  }`}
+                >
                   {verse.text}
                 </p>
               </div>

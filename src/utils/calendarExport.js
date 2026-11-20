@@ -31,7 +31,7 @@ export function downloadNovenaICS(novena, startDate = new Date()) {
     const endStr = formatEndDate(curDate);
 
     const cleanPrayer = (day.prayer || "").replace(/\r?\n/g, ' ');
-    const desc = `Day ${day.day} of 9: ${day.theme}\\n\\nPrayer:\\n"${cleanPrayer}"\\n\\nFeast: ${novena.feastDate || ''}\\nPurpose: ${novena.purpose || ''}\\nPray with sacred audio on Lorica: http://localhost:3001/#novenas`;
+    const desc = `Day ${day.day} of 9: ${day.theme}\\n\\nPrayer:\\n"${cleanPrayer}"\\n\\nFeast: ${novena.feastDate || ''}\\nPurpose: ${novena.purpose || ''}\\nPray with sacred audio on Lorica: https://loricaprayers.com/#novenas`;
 
     return [
       'BEGIN:VEVENT',
@@ -84,7 +84,7 @@ export function openGoogleCalendarNovena(novena, startDate = new Date()) {
 
   const title = encodeURIComponent(`Lorica Novena: ${novena.title} (Day 1 of 9)`);
   const details = encodeURIComponent(
-    `9-Day Catholic Novena: ${novena.title}\n\nFeast Date: ${novena.feastDate}\nPurpose: ${novena.purpose}\n\nStart praying Day 1 with sacred choral & contemplative audio at:\nhttp://localhost:3001/#novenas`
+    `9-Day Catholic Novena: ${novena.title}\n\nFeast Date: ${novena.feastDate}\nPurpose: ${novena.purpose}\n\nStart praying Day 1 with sacred choral & contemplative audio at:\nhttps://loricaprayers.com/#novenas`
   );
   const rrule = encodeURIComponent('RRULE:FREQ=DAILY;COUNT=9');
 

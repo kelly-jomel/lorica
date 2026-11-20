@@ -30,8 +30,30 @@ export default function NovenasPortal({ onBack, onPlayAudio }) {
 
   const handlePlayDayPrayer = (day) => {
     soundEngine.init();
-    soundEngine.playBell(440);
-    soundEngine.speakText(`${day.title}. Intention: ${day.intention}. Scripture: ${day.scripture}. ${day.prayer}`);
+    soundEngine.playBell(587.33);
+
+    if (onPlayAudio) {
+      onPlayAudio({
+        id: `${selectedNovena.id}-day-${day.day}`,
+        title: `${selectedNovena.title} — Day ${day.day}`,
+        category: `9-Day Novena • ${selectedNovena.group}`,
+        duration: day.duration || "18:45",
+        description: `${day.title || `Day ${day.day}`} • ${day.intention || ''}`,
+        narratorTrack: day.narratorTrack,
+        narratorName: day.narratorName || selectedNovena.narratorName,
+        audioTrack: "/audio/gregorian_chant_cathedral.ogg",
+        chantName: "Novena Liturgical Choral",
+        verses: [
+          { id: 1, text: `${selectedNovena.title} — ${day.title}. In the Name of the Father, and of the Son, and of the Holy Spirit. Amen.` },
+          { id: 2, text: `Intention: ${day.intention}` },
+          ...(day.scripture ? [{ id: 3, text: `Scripture: ${day.scripture}` }] : []),
+          { id: 4, text: day.prayer },
+          { id: 5, text: `${selectedNovena.closingPrayer || ''} ${selectedNovena.closingInvocation || 'Amen.'}` }
+        ]
+      });
+    } else {
+      soundEngine.speakText(`${day.title}. Intention: ${day.intention}. Scripture: ${day.scripture}. ${day.prayer}`);
+    }
   };
 
   if (!selectedNovena) {

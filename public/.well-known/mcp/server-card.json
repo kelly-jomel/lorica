@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/mcp-server-card.json",
+  "name": "lorica-prayer-api",
+  "version": "1.0.0",
+  "description": "Sacred Catholic prayers, 9-day novenas, liturgical calendar, and spiritual warfare armor agent endpoint.",
+  "homepage": "https://loricaprayers.com/",
+  "endpoint": "https://loricaprayers.com/api/user-handler.php",
+  "transport": "http",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  },
+  "contact": {
+    "email": "info@xydris.in",
+    "url": "https://xydris.in"
+  }
+}

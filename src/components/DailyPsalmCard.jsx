@@ -3,7 +3,7 @@ import { BookOpen, Play, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Cloc
 import { DAILY_PSALMS, getTodayPsalm } from '../data/dailyPsalmsData';
 import { soundEngine } from '../services/soundEngine';
 
-export default function DailyPsalmCard({ onPlayPrayer }) {
+export default function DailyPsalmCard({ onPlayPrayer, onOpenBible }) {
   const [currentDayIndex, setCurrentDayIndex] = useState(new Date().getDay());
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -117,13 +117,25 @@ export default function DailyPsalmCard({ onPlayPrayer }) {
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-1 text-xs">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-slate-400 hover:text-slate-200 flex items-center gap-1 font-medium"
-          >
-            <span>{isExpanded ? 'Hide text' : 'Read full psalm'}</span>
-            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-slate-400 hover:text-slate-200 flex items-center gap-1 font-medium"
+            >
+              <span>{isExpanded ? 'Hide' : 'Strophes'}</span>
+              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+            {onOpenBible && (
+              <button
+                onClick={onOpenBible}
+                className="text-gold-400/90 hover:text-gold-200 flex items-center gap-1 font-medium"
+                title="Read in Catholic Bible Reader"
+              >
+                <BookOpen className="w-3 h-3" />
+                <span>Bible</span>
+              </button>
+            )}
+          </div>
 
           <button
             onClick={handlePlayPsalm}

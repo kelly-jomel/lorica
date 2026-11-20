@@ -12,14 +12,46 @@ import MiniPlayer from './components/MiniPlayer';
 import BenefactorModal from './components/BenefactorModal';
 import LiturgicalCalendarModal from './components/LiturgicalCalendarModal';
 import NovenaDetailModal from './components/NovenaDetailModal';
+import HiddenAdminView from './components/HiddenAdminView';
+import BibleReaderModal from './components/BibleReaderModal';
+import ConfessionHelperModal from './components/ConfessionHelperModal';
+import DailyLiturgicalBanner from './components/DailyLiturgicalBanner';
+import DailyRosaryModal from './components/DailyRosaryModal';
+import SacredCardShareModal from './components/SacredCardShareModal';
+import PrayerIntentionsModal from './components/PrayerIntentionsModal';
+import UserProfileModal from './components/UserProfileModal';
+import { authService } from './services/authService';
 import { INITIAL_CANDLES } from './data/candlesData';
 import { PRAYERS_DATA } from './data/prayersData';
 import { soundEngine } from './services/soundEngine';
 import { Smartphone, Globe, Shield, Sparkles } from 'lucide-react';
 
 export default function App() {
-  // Navigation / Mode state: 'website' or 'app'
-  const [viewMode, setViewMode] = useState('website');
+  // Navigation / Mode state: 'website' | 'app' | 'admin'
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#admin' || hash === '#xydris-admin') {
+        return 'admin';
+      }
+    }
+    return 'website';
+  });
+
+  // Listen to hash changes for #admin
+  React.useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#admin' || hash === '#xydris-admin') {
+        setViewMode('admin');
+      } else if (hash === '#portal' || hash === '#my-portal' || hash === '#profile' || hash === '#account' || hash === '#benefactor-portal') {
+        setViewMode('website');
+        setIsProfileOpen(true);
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
   const [activeTab, setActiveTab] = useState('sanctuary');
   const [isPhoneMockup, setIsPhoneMockup] = useState(true);
   const [candles, setCandles] = useState(INITIAL_CANDLES);
@@ -27,7 +59,39 @@ export default function App() {
   // Modals
   const [isBenefactorOpen, setIsBenefactorOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isBibleOpen, setIsBibleOpen] = useState(false);
+  const [isConfessionOpen, setIsConfessionOpen] = useState(false);
+  const [isRosaryOpen, setIsRosaryOpen] = useState(false);
+  const [isIntentionsOpen, setIsIntentionsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => authService.getUser());
+  const [shareCardItem, setShareCardItem] = useState(null);
   const [selectedNovena, setSelectedNovena] = useState(null);
+
+  // Sync user authentication state
+  React.useEffect(() => {
+    const unsub = authService.subscribe((u) => setCurrentUser(u));
+    return () => unsub();
+  }, []);
+
+  // Check URL hash for direct links like #confession, #rosary, #intentions, #profile
+  React.useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#confession' || hash === '#examination') {
+        setIsConfessionOpen(true);
+      } else if (hash === '#rosary' || hash === '#holy-rosary') {
+        setIsRosaryOpen(true);
+      } else if (hash === '#intentions' || hash === '#altar') {
+        setIsIntentionsOpen(true);
+      } else if (hash === '#profile' || hash === '#account' || hash === '#benefactor-portal' || hash === '#portal' || hash === '#my-portal') {
+        setIsProfileOpen(true);
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
 
   // Audio Player State
   const [currentPrayer, setCurrentPrayer] = useState(null);
@@ -56,15 +120,31 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-obsidian-950 text-slate-100 relative">
-      {/* 1. PUBLIC WEBSITE MODE */}
-      {viewMode === 'website' ? (
-        <WebsiteView
-          onLaunchApp={() => setViewMode('app')}
-          onPlayPrayer={handlePlayPrayer}
-          onOpenBenefactor={() => setIsBenefactorOpen(true)}
-          onOpenCalendar={() => setIsCalendarOpen(true)}
-          onSelectNovena={(novena) => setSelectedNovena(novena)}
+      {/* 0. HIDDEN ADMIN VIEW */}
+      {viewMode === 'admin' ? (
+        <HiddenAdminView
+          onExitAdmin={() => {
+            window.location.hash = '';
+            setViewMode('website');
+          }}
         />
+      ) : viewMode === 'website' ? (
+        <>
+          <DailyLiturgicalBanner onOpenCalendar={() => setIsCalendarOpen(true)} />
+          <WebsiteView
+            onLaunchApp={() => setViewMode('app')}
+            onPlayPrayer={handlePlayPrayer}
+            onOpenBenefactor={() => setIsBenefactorOpen(true)}
+            onOpenCalendar={() => setIsCalendarOpen(true)}
+            onSelectNovena={(novena) => setSelectedNovena(novena)}
+            onOpenBible={() => setIsBibleOpen(true)}
+            onOpenConfession={() => setIsConfessionOpen(true)}
+            onOpenRosary={() => setIsRosaryOpen(true)}
+            onOpenIntentions={() => setIsIntentionsOpen(true)}
+            onOpenProfile={() => setIsProfileOpen(true)}
+            onShareCard={(item) => setShareCardItem(item)}
+          />
+        </>
       ) : (
         /* 2. SACRED SANCTUARY APP MODE */
         <div className="min-h-screen flex flex-col items-center justify-center py-0 sm:py-6 sm:px-4">
@@ -94,6 +174,7 @@ export default function App() {
               onOpenSOS={handleOpenSOS}
               onOpenBenefactor={() => setIsBenefactorOpen(true)}
               onOpenCalendar={() => setIsCalendarOpen(true)}
+              onOpenBible={() => setIsBibleOpen(true)}
               onSwitchToWebsite={() => setViewMode('website')}
             />
 
@@ -106,6 +187,7 @@ export default function App() {
                   unreadCandlesCount={candles.length}
                   onOpenBenefactor={() => setIsBenefactorOpen(true)}
                   onOpenCalendar={() => setIsCalendarOpen(true)}
+                  onOpenBible={() => setIsBibleOpen(true)}
                 />
               )}
 
@@ -118,6 +200,7 @@ export default function App() {
                   onPlayPrayer={handlePlayPrayer}
                   onSelectTool={(tool) => setActiveTab('tools')}
                   onSelectNovena={(novena) => setSelectedNovena(novena)}
+                  onOpenBible={() => setIsBibleOpen(true)}
                 />
               )}
 
@@ -195,6 +278,22 @@ export default function App() {
       <BenefactorModal
         isOpen={isBenefactorOpen}
         onClose={() => setIsBenefactorOpen(false)}
+        onOpenProfile={() => setIsProfileOpen(true)}
+      />
+
+      {/* Pilgrim User & Benefactor Portal Modal */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={currentUser}
+        onSignIn={(newUser) => {
+          authService.saveUser(newUser);
+          setCurrentUser(newUser);
+        }}
+        onSignOut={() => {
+          authService.signOut();
+          setCurrentUser(null);
+        }}
       />
 
       {/* Catholic Liturgical Calendar Modal */}
@@ -202,6 +301,58 @@ export default function App() {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         onPlayPrayer={handlePlayPrayer}
+      />
+
+      {/* Catholic Holy Bible Reader Modal */}
+      <BibleReaderModal
+        isOpen={isBibleOpen}
+        onClose={() => setIsBibleOpen(false)}
+        onAskAngel={(prompt) => {
+          setIsBibleOpen(false);
+          setActiveTab('ask');
+        }}
+      />
+
+      {/* Catholic Examination of Conscience & Confession Helper */}
+      <ConfessionHelperModal
+        isOpen={isConfessionOpen}
+        onClose={() => {
+          setIsConfessionOpen(false);
+          if (window.location.hash === '#confession' || window.location.hash === '#examination') {
+            window.location.hash = '';
+          }
+        }}
+        onPlayPrayer={handlePlayPrayer}
+      />
+
+      {/* Daily Holy Rosary Modal with Latin / English Mode */}
+      <DailyRosaryModal
+        isOpen={isRosaryOpen}
+        onClose={() => {
+          setIsRosaryOpen(false);
+          if (window.location.hash === '#rosary' || window.location.hash === '#holy-rosary') {
+            window.location.hash = '';
+          }
+        }}
+        onPlayAudio={handlePlayPrayer}
+      />
+
+      {/* Community Prayer Intentions & Altar Modal */}
+      <PrayerIntentionsModal
+        isOpen={isIntentionsOpen}
+        onClose={() => {
+          setIsIntentionsOpen(false);
+          if (window.location.hash === '#intentions' || window.location.hash === '#altar') {
+            window.location.hash = '';
+          }
+        }}
+      />
+
+      {/* Sacred Social Card Share Modal */}
+      <SacredCardShareModal
+        isOpen={!!shareCardItem}
+        onClose={() => setShareCardItem(null)}
+        item={shareCardItem}
       />
     </div>
   );

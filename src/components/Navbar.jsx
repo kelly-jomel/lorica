@@ -1,7 +1,7 @@
 import React from 'react';
-import { Shield, Smartphone, Monitor, Sparkles, Volume2, Bell, Heart, Calendar, Globe } from 'lucide-react';
+import { Shield, Smartphone, Monitor, Sparkles, Volume2, Bell, Heart, Calendar, Globe, BookOpen } from 'lucide-react';
 
-export default function Navbar({ isPhoneMockup, setIsPhoneMockup, onOpenSOS, onOpenBenefactor, onOpenCalendar, onSwitchToWebsite }) {
+export default function Navbar({ isPhoneMockup, setIsPhoneMockup, onOpenSOS, onOpenBenefactor, onOpenCalendar, onSwitchToWebsite, onOpenBible }) {
   return (
     <header className="sticky top-0 z-40 bg-obsidian-950/80 backdrop-blur-md border-b border-obsidian-700/60 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -12,7 +12,7 @@ export default function Navbar({ isPhoneMockup, setIsPhoneMockup, onOpenSOS, onO
         />
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-serif font-bold text-base tracking-wide text-gold-200">Lorica</h1>
+            <span className="font-serif font-bold text-base tracking-wide text-gold-200">Lorica</span>
             <button
               onClick={onOpenBenefactor}
               className="text-[10px] px-2 py-0.5 rounded-full bg-gold-500/15 border border-gold-500/40 text-gold-300 font-mono font-semibold hover:bg-gold-500/25 transition flex items-center gap-1 cursor-pointer"
@@ -30,6 +30,15 @@ export default function Navbar({ isPhoneMockup, setIsPhoneMockup, onOpenSOS, onO
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Catholic Bible Reader Quick Trigger */}
+        <button
+          onClick={onOpenBible}
+          className="p-1.5 rounded-lg bg-obsidian-800 border border-obsidian-700 text-slate-300 hover:text-gold-300 hover:border-gold-500/40 transition active:scale-95"
+          title="The Holy Roman Catholic Bible (73 Books)"
+        >
+          <BookOpen className="w-4 h-4 text-gold-400" />
+        </button>
+
         {/* Switch to Website Button */}
         {onSwitchToWebsite && (
           <button

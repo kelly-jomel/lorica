@@ -1,0 +1,43 @@
+# Lorica - Catholic Prayers, Novenas & Spiritual Warfare Armor
+
+> Lorica is an ad-free sacred Catholic sanctuary providing studio-narrated prayers, 12 complete 9-day novenas with Holy Rosary decades, loopable night protection psalms, and an Examination of Conscience for Confession.
+
+## Core Treasury & Sanctuary
+
+- [Home & Sanctuary](https://loricaprayers.com/): Interactive Catholic prayer armory, audio player, and daily prayer tools.
+- [Catholic Prayer Treasury](https://loricaprayers.com/#treasury): 46 traditional prayers categorized by Morning, Night & Sleep, Marian, Liturgical Latin, and Spiritual Warfare.
+- [12 Complete Catholic Novenas](https://loricaprayers.com/#novenas): 9-day novenas paired with the 5-decade Holy Rosary.
+- [Spiritual Warfare & SOS Armor](https://loricaprayers.com/#warfare): Emergency deliverance prayers, St. Michael Archangel protection, and Psalm 91 sleep loops.
+- [Benefactor & Pilgrim Portal](https://loricaprayers.com/#portal): Sign-in and donor portal for the Perpetual First Friday Mass Covenant.
+
+## Key Novenas (9-Day Prayers)
+
+- [Surrender Novena](https://loricaprayers.com/novenas/surrender-novena/): "O Jesus, I surrender myself to You, take care of everything." Given by Jesus to Don Dolindo Ruotolo.
+- [St. Michael the Archangel Novena](https://loricaprayers.com/novenas/st-michael-novena/): Spiritual combat armor and angelic protection against demonic oppression.
+- [St. Jude Novena](https://loricaprayers.com/novenas/st-jude-novena/): Patron saint of hopeless cases and desperate situations.
+- [Divine Mercy Novena](https://loricaprayers.com/novenas/divine-mercy-novena/): Novena dictated by Jesus to St. Maria Faustina Kowalska.
+- [Our Lady Undoer of Knots](https://loricaprayers.com/novenas/undoer-of-knots/): Marian devotion for untying deep spiritual, family, and emotional knots.
+- [St. Joseph Novena](https://loricaprayers.com/novenas/st-joseph-novena/): Terror of demons and patron protector of families, workers, and fathers.
+- [St. Therese of the Child Jesus Rose Novena](https://loricaprayers.com/novenas/st-therese-rose-novena/): The Little Flower shower of roses novena for trust and grace.
+- [Holy Souls in Purgatory Novena](https://loricaprayers.com/novenas/holy-souls-purgatory/): Intercession and suffrages for the holy souls awaiting heavenly glory.
+- [Sacred Heart of Jesus Novena](https://loricaprayers.com/novenas/sacred-heart-novena/): Devotion of divine love revealed to St. Margaret Mary Alacoque.
+- [Holy Spirit Novena](https://loricaprayers.com/novenas/holy-spirit-novena/): The Church's original novena prayed between Ascension and Pentecost.
+- [Miraculous Medal Novena](https://loricaprayers.com/novenas/miraculous-medal-novena/): Devotion revealed to St. Catherine Labouré in 1830.
+- [St. Andrew Christmas Novena](https://loricaprayers.com/novenas/st-andrew-christmas-novena/): Traditional Advent prayer recited 15 times daily until Christmas.
+
+## Featured Prayers & Armor
+
+- [Psalm 91: The Soldier's Shield](https://loricaprayers.com/prayers/psalm-91/): Ancient night prayer against terror, panic, and nocturnal attacks.
+- [Lorica of St. Patrick](https://loricaprayers.com/prayers/lorica-patrick/): 5th-century Celtic breastplate invoking Christ on all sides.
+- [St. Michael Deliverance Prayer](https://loricaprayers.com/prayers/st-michael/): Historic battle prayer composed by Pope Leo XIII.
+- [St. Benedict Medal Exorcism](https://loricaprayers.com/prayers/st-benedict-exorcism/): Traditional blessing and warding against evil (Vade Retro Satana).
+- [The Holy Rosary - Joyful Mysteries](https://loricaprayers.com/prayers/holy-rosary-joyful/): Five decades meditating on the Incarnation of Our Lord.
+- [The Holy Rosary - Sorrowful Mysteries](https://loricaprayers.com/prayers/holy-rosary-sorrowful/): Five decades meditating on the Passion of Christ.
+- [Night Compline Bedtime Prayer](https://loricaprayers.com/prayers/night-compline/): Traditional Night Office prayer for peaceful sleep and safeguarding.
+
+## About, Legal & Contact
+
+- [About Lorica](https://loricaprayers.com/about.html): Mission, Catholic tradition, and technical background.
+- [Contact Details](https://loricaprayers.com/contact.html): Machine-readable email contact and administrative support.
+- [Terms & Privacy](https://loricaprayers.com/terms.html): Terms of service, privacy policy, and zero-ad commitment.
+- [MCP Server Card](https://loricaprayers.com/.well-known/mcp/server-card.json): Machine Communication Protocol specifications for AI agents.

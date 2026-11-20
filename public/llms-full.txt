@@ -1,0 +1,29 @@
+# Lorica - Traditional Catholic Prayers, 12 Novenas & Spiritual Armor
+
+Welcome to **Lorica** (https://loricaprayers.com), an ad-free Catholic spiritual sanctuary providing studio audio narrations, 12 complete 9-day novenas with Holy Rosary decades, loopable night protection psalms, and an Examination of Conscience for Confession.
+
+## Key Features & Capabilities
+
+- **Audio Prayers & Night Loops**: Studio vocal narrations with loopable Catholic prayers including Psalm 91, St. Michael Archangel prayer, and Night Compline.
+- **12 Catholic Novenas**: 9-day devotions including Surrender Novena, St. Jude, Divine Mercy, Our Lady Undoer of Knots, St. Joseph, and St. Therese.
+- **Confession Helper**: Catholic Examination of Conscience organized by the Ten Commandments and the Seven Capital Sins.
+- **73-Book Roman Catholic Bible**: Douay-Rheims scripture reader with cross-references.
+- **Liturgical Calendar**: Real-time Catholic feast day calculations and daily seasonal vigils.
+
+## Organization & Contact
+
+- **Organization**: Lorica (stewarded by Xydris.in)
+- **Email**: info@xydris.in
+- **Official Profiles**:
+  - Website: https://loricaprayers.com/
+  - X / Twitter: https://x.com/LoricaPrayers
+  - Facebook: https://www.facebook.com/loricaprayers
+  - YouTube: https://www.youtube.com/@loricaprayers
+  - Parent: https://xydris.in
+
+## Machine Endpoints & Protocol Cards
+
+- **LLM Index**: https://loricaprayers.com/llms.txt
+- **MCP Server Card**: https://loricaprayers.com/.well-known/mcp/server-card.json
+- **Sitemap**: https://loricaprayers.com/sitemap.xml
+- **Robots Policy**: https://loricaprayers.com/robots.txt (Content-Signal: search=yes, ai-train=no)

@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
   Disc,
+  Clock,
   Layers
 } from 'lucide-react';
 import { soundEngine } from '../services/soundEngine';
@@ -27,6 +28,46 @@ export default function NovenaDetailModal({ novena, isOpen, onClose, onPlayAudio
   const [activeDay, setActiveDay] = useState(1);
   const [showCalendarMenu, setShowCalendarMenu] = useState(false);
   const [calendarNotification, setCalendarNotification] = useState(null);
+  
+  // Persistent Novena Progress Tracking in localStorage
+  const [completedDays, setCompletedDays] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`lorica_novena_progress_${novena?.id}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Daily Push Reminder Time State
+  const [dailyReminderHour, setDailyReminderHour] = useState(() => {
+    return localStorage.getItem(`lorica_novena_reminder_${novena?.id}`) || '19:00';
+  });
+
+  const toggleDayCompleted = (dayNum) => {
+    soundEngine.init();
+    soundEngine.playBell(587.33);
+    setCompletedDays(prev => {
+      const next = prev.includes(dayNum) 
+        ? prev.filter(d => d !== dayNum)
+        : [...prev, dayNum];
+      try {
+        localStorage.setItem(`lorica_novena_progress_${novena.id}`, JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  const handleSaveReminderTime = async (timeVal) => {
+    setDailyReminderHour(timeVal);
+    try {
+      localStorage.setItem(`lorica_novena_reminder_${novena.id}`, timeVal);
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        await Notification.requestPermission();
+      }
+      showToast(`✓ Daily prayer notification set for ${timeVal}!`);
+    } catch (e) {}
+  };
   
   // Rosary Mysteries State
   const [selectedMysteryKey, setSelectedMysteryKey] = useState(() => {
@@ -244,28 +285,64 @@ export default function NovenaDetailModal({ novena, isOpen, onClose, onPlayAudio
             </div>
           )}
 
-          {/* Day Selector Pills (Days 1 to 9) */}
+          {/* Day Selector Pills (Days 1 to 9) with Completed Check Indicators */}
           <div className="space-y-2">
-            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-              Select Day of Novena:
-            </span>
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <span className="uppercase tracking-wider">Select Day of Novena:</span>
+              <span className="text-gold-400 font-semibold">{completedDays.length} of 9 Days Completed</span>
+            </div>
             <div className="grid grid-cols-9 gap-1 sm:gap-2">
-              {novena.days.map((d) => (
-                <button
-                  key={d.day}
-                  onClick={() => {
-                    soundEngine.playBell(440);
-                    setActiveDay(d.day);
-                  }}
-                  className={`py-2.5 rounded-xl text-xs font-mono font-bold transition-all ${
-                    activeDay === d.day
-                      ? 'bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
-                      : 'bg-obsidian-950 border border-obsidian-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                  }`}
-                >
-                  {d.day}
-                </button>
-              ))}
+              {novena.days.map((d) => {
+                const isCompleted = completedDays.includes(d.day);
+                return (
+                  <button
+                    key={d.day}
+                    onClick={() => {
+                      soundEngine.playBell(440);
+                      setActiveDay(d.day);
+                    }}
+                    className={`py-2 rounded-xl text-xs font-mono font-bold flex flex-col items-center justify-center transition-all relative ${
+                      activeDay === d.day
+                        ? 'bg-gradient-to-r from-gold-500 to-gold-600 text-obsidian-950 shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
+                        : isCompleted
+                        ? 'bg-gold-500/15 border border-gold-500/50 text-gold-300'
+                        : 'bg-obsidian-950 border border-obsidian-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                  >
+                    <span>{d.day}</span>
+                    {isCompleted && (
+                      <span className="text-[9px] -mt-0.5 text-candle-flame">✓</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Daily Reminder Bar */}
+          <div className="p-3.5 rounded-2xl bg-obsidian-950/70 border border-obsidian-800 flex items-center justify-between text-xs gap-3">
+            <div className="flex items-center gap-2 text-slate-300">
+              <Clock className="w-4 h-4 text-gold-400 shrink-0" />
+              <span>Daily Prayer Reminder:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={dailyReminderHour}
+                onChange={(e) => handleSaveReminderTime(e.target.value)}
+                className="bg-obsidian-900 border border-obsidian-750 text-gold-300 px-2.5 py-1 rounded-lg text-xs font-mono focus:outline-none focus:border-gold-500"
+              />
+              <button
+                onClick={() => toggleDayCompleted(activeDay)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                  completedDays.includes(activeDay)
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-obsidian-900 border border-gold-500/30 text-gold-300 hover:bg-gold-500 hover:text-obsidian-950'
+                }`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{completedDays.includes(activeDay) ? 'Day Completed' : 'Mark Day Done'}</span>
+              </button>
             </div>
           </div>
 

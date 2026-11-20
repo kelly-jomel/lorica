@@ -1,11 +1,46 @@
+# Force HTTPS & Canonical Domain (loricaprayers.com)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\.loricaprayers\.com$ [NC]
+  RewriteRule ^(.*)$ https://loricaprayers.com/$1 [L,R=301]
+</IfModule>
+
+# RFC 8288 Link header advertising llms.txt & Markdown representation
+<IfModule mod_headers.c>
+  Header set Link '<https://loricaprayers.com/llms.txt>; rel="describedby"; type="text/plain", <https://loricaprayers.com/llms-full.txt>; rel="alternate"; type="text/markdown"' "expr=%{CONTENT_TYPE} =~ m#text/html#i"
+</IfModule>
+
+# Handle Content Negotiation (Accept: text/markdown) & Real 404 router
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
-  RewriteRule . /index.html [L]
+
+  # Serve router.php for robots.txt to bypass stale CDN cache
+  RewriteRule ^robots\.txt$ router.php [L]
+
+  # Serve router.php if requesting text/markdown
+  RewriteCond %{HTTP:Accept} text/markdown [NC]
+  RewriteCond %{REQUEST_URI} ^/(index\.html)?$
+  RewriteRule ^ router.php [L]
+
+  # Allow direct access to existing files & directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Direct all non-existent requests through router.php (which issues real 404 for missing pages or serves SPA)
+  RewriteRule ^ router.php [L]
+</IfModule>
+
+# Correct MIME Types for llms.txt, JSON-LD, Audio & Manifest
+<IfModule mod_mime.c>
+  AddType text/plain .txt
+  AddType application/json .json
+  AddType audio/mpeg .mp3
+  AddType audio/mp4 .m4a
+  AddType audio/ogg .ogg
+  AddType audio/wav .wav
 </IfModule>
 
 # GZIP Compression
@@ -16,8 +51,17 @@
 # Browser Caching
 <IfModule mod_expires.c>
   ExpiresActive On
+  ExpiresByType text/plain "access plus 0 seconds"
   ExpiresByType image/png "access plus 1 month"
   ExpiresByType image/svg+xml "access plus 1 month"
   ExpiresByType text/css "access plus 1 year"
   ExpiresByType application/javascript "access plus 1 year"
 </IfModule>
+
+<Files "robots.txt">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </IfModule>
+</Files>

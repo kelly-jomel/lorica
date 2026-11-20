@@ -21,7 +21,7 @@ import { PRAYERS_DATA } from '../data/prayersData';
 import NovenasPortal from './NovenasPortal';
 import { soundEngine } from '../services/soundEngine';
 
-export default function ExploreSectionsView({ onPlayPrayer, onSelectTool }) {
+export default function ExploreSectionsView({ onPlayPrayer, onSelectTool, onOpenBible }) {
   const [activeMainTab, setActiveMainTab] = useState('PRAY'); // 'PRAY' | 'LEARN'
   const [selectedSection, setSelectedSection] = useState(null); // section object or null
   const [patronFilter, setPatronFilter] = useState('All');
@@ -230,6 +230,32 @@ export default function ExploreSectionsView({ onPlayPrayer, onSelectTool }) {
       {/* PRAY SECTIONS LIST */}
       {activeMainTab === 'PRAY' && (
         <div className="space-y-2.5">
+          {/* Catholic Holy Bible Feature Card */}
+          <div
+            onClick={onOpenBible}
+            className="group cursor-pointer p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-lg active:scale-99 bg-gradient-to-r from-gold-500/20 via-obsidian-900 to-obsidian-900 border-gold-500/40 hover:border-gold-400"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-obsidian-950 border border-gold-500/50 text-gold-300 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                <BookOpen className="w-5 h-5 text-gold-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif text-sm font-bold text-gold-200">The Holy Catholic Bible</h3>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-gold-500/20 text-gold-300 font-mono font-bold">
+                    73 Books
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">NABRE & NRSVCE with Deuterocanonical Books</p>
+                <span className="text-[10px] text-gold-400 font-mono mt-0.5 block">Full Scripture • Abbey Soundscape</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gold-400 font-semibold group-hover:translate-x-1 transition-transform">
+              <span>Read</span>
+              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-gold-400 transition" />
+            </div>
+          </div>
+
           {PRAY_SECTIONS.map((sec) => (
             <div
               key={sec.id}
