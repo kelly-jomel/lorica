@@ -1046,7 +1046,7 @@ export const PRAYERS_DATA = [
     "loopRecommended": false,
     "audioTrack": "/audio/gregorian_chant_cathedral.ogg",
     "chantName": "Cathedral Monastic Choir",
-    "narratorTrack": "/audio/signum_crucis_daniel.m4a",
+    "narratorTrack": "/audio/signum_crucis_george.mp3",
     "narratorName": "Daniel",
     "verses": [
       {
@@ -1078,7 +1078,7 @@ export const PRAYERS_DATA = [
     "loopRecommended": false,
     "audioTrack": "/audio/pater_noster_gregorian.ogg",
     "chantName": "Pallottine Schola Gregoriana",
-    "narratorTrack": "/audio/our_father_full_daniel.m4a",
+    "narratorTrack": "/audio/our_father_full_george.mp3",
     "narratorName": "Daniel",
     "verses": [
       {
@@ -1128,7 +1128,7 @@ export const PRAYERS_DATA = [
         "text": "Sicut erat in principio, et nunc, et semper, et in saecula saeculorum. Amen."
       }
     ],
-    "narratorTrack": "/audio/glory_be_daniel.m4a",
+    "narratorTrack": "/audio/glory_be_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1168,7 +1168,7 @@ export const PRAYERS_DATA = [
         "text": "Credo in Spiritum Sanctum, sanctam Ecclesiam catholicam, sanctorum communionem, remissionem peccatorum, carnis resurrectionem, vitam aeternam. Amen."
       }
     ],
-    "narratorTrack": "/audio/creed_daniel.m4a",
+    "narratorTrack": "/audio/creed_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1204,7 +1204,7 @@ export const PRAYERS_DATA = [
         "text": "Ideo firmiter propono, adjuvante gratia tua, de cetero me non peccaturum peccandique occasiones proximas fugiturum. Amen."
       }
     ],
-    "narratorTrack": "/audio/act_contrition_daniel.m4a",
+    "narratorTrack": "/audio/act_contrition_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1232,7 +1232,7 @@ export const PRAYERS_DATA = [
         "text": "Act of Charity: O my God, I love Thee above all things, with my whole heart and soul, because Thou art all-good and worthy of all love. I love my neighbor as myself for the love of Thee. I forgive all who have injured me, and ask pardon of all whom I have injured. Amen."
       }
     ],
-    "narratorTrack": "/audio/acts_virtues_daniel.m4a",
+    "narratorTrack": "/audio/acts_virtues_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1264,7 +1264,7 @@ export const PRAYERS_DATA = [
         "text": "Lord, into Thy hands I commend my spirit, my family, and my day. Grant that all I do may begin with Thy inspiration and continue with Thy saving help."
       }
     ],
-    "narratorTrack": "/audio/morning_offering_samantha.m4a",
+    "narratorTrack": "/audio/morning_offering_sarah.mp3",
     "narratorName": "Samantha"
   },
   {
@@ -1296,7 +1296,7 @@ export const PRAYERS_DATA = [
         "text": "I embrace Thee as if Thou wert already there, and unite myself wholly to Thee. Never permit me to be separated from Thee. Amen."
       }
     ],
-    "narratorTrack": "/audio/spiritual_communion_daniel.m4a",
+    "narratorTrack": "/audio/spiritual_communion_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1332,7 +1332,7 @@ export const PRAYERS_DATA = [
         "text": "O saving Victim, opening wide The gate of heaven to man below! Our foes press on from every side: Thine aid supply, thy strength bestow. All praise and thanks to thee ascend For evermore, blest One in Three; O grant us life that shall not end In our true native land with thee. Amen."
       }
     ],
-    "narratorTrack": "/audio/tantum_ergo_daniel.m4a",
+    "narratorTrack": "/audio/tantum_ergo_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1372,7 +1372,7 @@ export const PRAYERS_DATA = [
         "text": "And take unto you the helmet of salvation, and the sword of the Spirit, which is the word of God. By all prayer and supplication praying at all times in the spirit. Amen."
       }
     ],
-    "narratorTrack": "/audio/armor_of_god_daniel.m4a",
+    "narratorTrack": "/audio/armor_of_god_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1400,7 +1400,7 @@ export const PRAYERS_DATA = [
         "text": "For it is in giving that we receive; it is in pardoning that we are pardoned; and it is in dying that we are born to eternal life. Amen."
       }
     ],
-    "narratorTrack": "/audio/st_francis_peace_samantha.m4a",
+    "narratorTrack": "/audio/st_francis_peace_sarah.mp3",
     "narratorName": "Samantha"
   },
   {
@@ -1432,7 +1432,7 @@ export const PRAYERS_DATA = [
         "text": "Suscipe, Domine, universam meam libertatem. Accipe memoriam, intellectum, atque voluntatem omnem. Quidquid habeo vel possideo mihi largitus es; id tibi totum restituo, ac tuae prorsus voluntati trado gubernandum. Amorem tui solum cum gratia tua mihi dones, et dives sum satis, nec aliud quidquam ultra posco. Amen."
       }
     ],
-    "narratorTrack": "/audio/suscipe_ignatius_daniel.m4a",
+    "narratorTrack": "/audio/suscipe_ignatius_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1468,7 +1468,7 @@ export const PRAYERS_DATA = [
         "text": "Adoro te devote, latens Deitas, quae sub his figuris vere latitas: tibi se cor meum totum subjicit, quia te contemplans totum deficit. Visus, tactus, gustus in te fallitur, sed auditu solo tuto creditur. Credo quidquid dixit Dei Filius: nil hoc verbo Veritatis verius. Amen."
       }
     ],
-    "narratorTrack": "/audio/adoro_te_devote_daniel.m4a",
+    "narratorTrack": "/audio/adoro_te_devote_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1500,7 +1500,7 @@ export const PRAYERS_DATA = [
         "text": "So long Thy power hath blest me, sure it still Will lead me on, O'er moor and fen, o'er crag and torrent, till The night is gone; And with the morn those angel faces smile, Which I have loved long since, and lost awhile! Amen."
       }
     ],
-    "narratorTrack": "/audio/lead_kindly_light_daniel.m4a",
+    "narratorTrack": "/audio/lead_kindly_light_george.mp3",
     "narratorName": "Daniel"
   },
   {
@@ -1540,7 +1540,7 @@ export const PRAYERS_DATA = [
         "text": "Regina Caeli (Paschaltide): Queen of Heaven, rejoice, alleluia. For He whom thou didst merit to bear, alleluia, has risen, as He said, alleluia. Pray for us to God, alleluia. Rejoice and be glad, O Virgin Mary, alleluia. For the Lord is truly risen, alleluia. Amen."
       }
     ],
-    "narratorTrack": "/audio/the_angelus_samantha.m4a",
+    "narratorTrack": "/audio/the_angelus_sarah.mp3",
     "narratorName": "Samantha"
   },
   {
@@ -1580,7 +1580,7 @@ export const PRAYERS_DATA = [
         "text": "As he spoke to our fathers: to Abraham and to his seed for ever. Glory be to the Father, and to the Son, and to the Holy Spirit. Amen."
       }
     ],
-    "narratorTrack": "/audio/the_magnificat_samantha.m4a",
+    "narratorTrack": "/audio/the_magnificat_sarah.mp3",
     "narratorName": "Samantha"
   },
   {
